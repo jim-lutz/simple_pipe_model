@@ -1,0 +1,4 @@
+2018-03-30
+    see http://happygitwithr.com/ to set up git repository
+    follow her directions in the directory above, not here.
+    
