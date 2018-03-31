@@ -2,3 +2,6 @@
     see http://happygitwithr.com/ to set up git repository
     follow her directions in the directory above, not here.
     
+    in a trial read_pipe_data.R reads stuff in from a spreadsheet.
+    will have to set range, 
+    hopefully that won't have to be manually set different for each spreadsheet
