@@ -1,0 +1,29 @@
+notes Yanda call 2018-04-02
+
+questions on when to start, don't assume start is at TC1
+pay attention to start.
+
+interpolates to second for reaching threshold
+
+adjust offset to show initial flow time at TC2
+TC2 is close to TC1. He used TC2 as the origin
+
+More uncertainty for lower thresholds
+
+Calculated AV/PV to various threshold temperature
+
+fit slope of AV/PV to linear
+
+Made a script to automate selection of groups and selection of thresholds
+
+Initial temperature of all TCs close and WH is constant
+
+for each threshold temp AV/PVs are basically linear 
+because constant flow rate volume = time
+
+Rise ratio depends on hot and cold temperatures
+
+He will send be template he used.
+
+
+

@@ -5,3 +5,18 @@
     in a trial read_pipe_data.R reads stuff in from a spreadsheet.
     will have to set range, 
     hopefully that won't have to be manually set different for each spreadsheet
+    
+2018-04-02
+    manually collect metadata on pipe testing spreadsheets.
+    
+    instead try getting tidyxl to read specific information from Sheet1 in each of the 
+    spreadsheets https://nacnudus.github.io/tidyxl/
+    
+    test on title
+    
+    went back to readxl
+    was able to read meta data from all the spreadsheets
+    don't have TC locations correct yet
+    
+    
+        
