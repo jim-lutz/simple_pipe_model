@@ -28,23 +28,23 @@ l_xlxs_fns[1]
 
 # turn this into a data.table
 # to add metadata to before trying to read the test data itself
-DT_tests <- data.table(file=l_xlxs_fns)
+DT_test_info <- data.table(file=l_xlxs_fns)
 
 # just the file names
-DT_tests[, fname:= str_extract(file,"a/((.+).xlsx)")]
-DT_tests[, fname:= str_remove(fname, "a/")]
+DT_test_info[, fname:= str_extract(file,"a/((.+).xlsx)")]
+DT_test_info[, fname:= str_remove(fname, "a/")]
 
 # loop through all the file names
 # (this is going to be really ugly)
-for(i in 1:nrow(DT_tests)) {
+for(i in 1:nrow(DT_test_info)) {
   # read in the header info as a tibble
-  tb_header <- read_xlsx(path = DT_tests[i]$file,
+  tb_header <- read_xlsx(path = DT_test_info[i]$file,
                       sheet = "Sheet1",
                       range = "A1:G16",
                       col_names = FALSE)
   
-  # put elements in DT_tests
-  DT_tests[i, `:=` (title    = pluck(tb_header,1,1),
+  # put elements in DT_test_info
+  DT_test_info[i, `:=` (title    = pluck(tb_header,1,1),
                     ODin     = pluck(tb_header,2,2),
                     IDin     = pluck(tb_header,2,3), # pluck is column first
                     gal_pls  = pluck(tb_header,7,2), # gallons per pulse
@@ -53,10 +53,10 @@ for(i in 1:nrow(DT_tests)) {
            ]
   
   # adjust subsequent rows for CPVC files
-  first.TC.row = ifelse(grepl("CPVC", DT_tests[i]$file),7,6)
+  first.TC.row = ifelse(grepl("CPVC", DT_test_info[i]$file),7,6)
   
-  # # get the TC location in gallons
-  DT_tests[i, `:=` (TC1_gal  = pluck(tb_header,3,first.TC.row  ),
+  # get the TC location in gallons
+  DT_test_info[i, `:=` (TC1_gal  = pluck(tb_header,3,first.TC.row  ),
                     TC2_gal  = pluck(tb_header,3,first.TC.row+1),
                     TC3_gal  = pluck(tb_header,3,first.TC.row+2),
                     TC4_gal  = pluck(tb_header,3,first.TC.row+3),
@@ -68,12 +68,25 @@ for(i in 1:nrow(DT_tests)) {
                     TC23_gal = pluck(tb_header,3,first.TC.row+9))
            ]
   
+  # get the TC location in feet
+  DT_test_info[i, `:=` (TC1_ft  = pluck(tb_header,2,first.TC.row  ),
+                    TC2_ft  = pluck(tb_header,2,first.TC.row+1),
+                    TC3_ft  = pluck(tb_header,2,first.TC.row+2),
+                    TC4_ft  = pluck(tb_header,2,first.TC.row+3),
+                    TC5_ft  = pluck(tb_header,2,first.TC.row+4),
+                    TC6_ft  = pluck(tb_header,2,first.TC.row+5),
+                    TC13_ft = pluck(tb_header,2,first.TC.row+6),
+                    TC14_ft = pluck(tb_header,2,first.TC.row+7),
+                    TC22_ft = pluck(tb_header,2,first.TC.row+8),
+                    TC23_ft = pluck(tb_header,2,first.TC.row+9))
+           ]
 
 }
              
-
 # save the header data as a csv file
-write.csv(DT_tests, file= paste0(wd_data,"DT_tests.csv"), row.names = FALSE)
+write.csv(DT_test_info, file= paste0(wd_data,"DT_test_info.csv"), row.names = FALSE)
 
+# save the test info data as an .Rdata file
+save(DT_test_info, file = paste0(wd_data,"DT_test_info.Rdata"))
 
 

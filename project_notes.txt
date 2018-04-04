@@ -25,6 +25,16 @@
    
    found pluck() to pick elements out of a tibble.
    
+   able to read all test info from spreadsheet headers.
+   34RigidCuBareRawData1.xlsx
+   34RigidCUR47RawData1.xlsx
+   Copy of 34RigidCUR47RawData1.xlsx
+   all have the same title 
+        3/4 RIGID CU RAW TEST DATA - ALL 1 SECOND DATA ?
+    
+
+
+   
     
     
         
