@@ -21,7 +21,9 @@
 2018-04-04
    
    use the index of the file loop to test for CPVC
+   first 4 fields look OK. Not sure what was being read for rest.
    
+   found pluck() to pick elements out of a tibble.
    
     
     
