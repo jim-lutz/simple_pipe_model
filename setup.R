@@ -48,6 +48,10 @@ library(lubridate)
 # part of tidyverse but wasn't seeing it
 
 
+# try readxl
+if(!require(readxl)){install.packages("readxl")}
+library(readxl)
+
 # work with stringr 
 # if(!require(stringr)){install.packages("stringr")}
 # library(stringr)

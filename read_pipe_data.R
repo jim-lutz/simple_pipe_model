@@ -34,12 +34,8 @@ DT_tests <- data.table(file=l_xlxs_fns)
 DT_tests[, fname:= str_extract(file,"a/((.+).xlsx)")]
 DT_tests[, fname:= str_remove(fname, "a/")]
 
-
-# try readxl
-if(!require(readxl)){install.packages("readxl")}
-library(readxl)
-
-# this is going to be really ugly
+# loop through all the file names
+# (this is going to be really ugly)
 for(i in 1:nrow(DT_tests)) {
   # read in the header info as a tibble
   tb_header <- read_xlsx(path = DT_tests[i]$file,
@@ -58,38 +54,24 @@ for(i in 1:nrow(DT_tests)) {
                     ft_gal   = DF_header[4,2])
            ]
   
-  # CPVC files
-  DT_tests[grep("CPVC",fname), 
-           `:=` (TC1_gal  = DF_header[7,3],
-                 TC2_gal  = DF_header[8,3],
-                 TC3_gal  = DF_header[9,3],
-                 TC4_gal  = DF_header[10,3],
-                 TC5_gal  = DF_header[11,3],
-                 TC6_gal  = DF_header[12,3],
-                 TC13_gal = DF_header[13,3],
-                 TC14_gal = DF_header[14,3],
-                 TC22_gal = DF_header[15,3],
-                 TC23_gal = DF_header[16,3])
+  # adjust subsequent rows for CPVC files
+  first.TC.row = ifelse(grepl("CPVC", i),7,6)
+  
+  # get the TC location in gallons
+  DT_tests[, `:=` (TC1_gal  = DF_header[first.TC.row  ,3],
+                   TC2_gal  = DF_header[first.TC.row+1,3],
+                   TC3_gal  = DF_header[first.TC.row+2,3],
+                   TC4_gal  = DF_header[first.TC.row+3,3],
+                   TC5_gal  = DF_header[first.TC.row+4,3],
+                   TC6_gal  = DF_header[first.TC.row+5,3],
+                   TC13_gal = DF_header[first.TC.row+6,3],
+                   TC14_gal = DF_header[first.TC.row+7,3],
+                   TC22_gal = DF_header[first.TC.row+8,3],
+                   TC23_gal = DF_header[first.TC.row+9,3])
            ]
 
-  # non-CPVC files
-  DT_tests[grep("CPVC",fname, invert = TRUE), 
-           `:=` (TC1_gal  = DF_header[6,3],
-                 TC2_gal  = DF_header[7,3],
-                 TC3_gal  = DF_header[8,3],
-                 TC4_gal  = DF_header[9,3],
-                 TC5_gal  = DF_header[10,3],
-                 TC6_gal  = DF_header[11,3],
-                 TC13_gal = DF_header[12,3],
-                 TC14_gal = DF_header[13,3],
-                 TC22_gal = DF_header[14,3],
-                 TC23_gal = DF_header[15,3])
-           ]
-  
 }
              
- 
-
 str(DT_tests)
 DT_tests[,2:17]
 

@@ -18,5 +18,11 @@
     was able to read meta data from all the spreadsheets
     don't have TC locations correct yet
     
+2018-04-04
+   
+   use the index of the file loop to test for CPVC
+   
+   
+    
     
         
