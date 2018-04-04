@@ -36,8 +36,6 @@ DT_tests[, fname:= str_remove(fname, "a/")]
 
 # loop through all the file names
 # (this is going to be really ugly)
-# for testing
-i = 1
 for(i in 1:nrow(DT_tests)) {
   # read in the header info as a tibble
   tb_header <- read_xlsx(path = DT_tests[i]$file,
@@ -45,60 +43,37 @@ for(i in 1:nrow(DT_tests)) {
                       range = "A1:G16",
                       col_names = FALSE)
   
-  # convert to data.frame to extract specific elements
-  DF_header <- as.data.frame(tb_header)
-  # # put elements in DT_tests
-  # DT_tests[i, `:=` (title    = DF_header[1,1],
-  #                   ODin     = DF_header[2,2],
-  #                   IDin     = DF_header[3,2],
-  #                   gal_pls  = DF_header[2,7], # gallons per pulse
-  #                   ft_gal   = DF_header[4,2])
-  #          ]
-  
   # put elements in DT_tests
   DT_tests[i, `:=` (title    = pluck(tb_header,1,1),
                     ODin     = pluck(tb_header,2,2),
-                    IDin     = pluck(tb_header,3,2),
-                    gal_pls  = pluck(tb_header,2,7), # gallons per pulse
-                    ft_gal   = pluck(tb_header,4,2)
+                    IDin     = pluck(tb_header,2,3), # pluck is column first
+                    gal_pls  = pluck(tb_header,7,2), # gallons per pulse
+                    ft_gal   = pluck(tb_header,2,4)
                     )
            ]
   
   # adjust subsequent rows for CPVC files
   first.TC.row = ifelse(grepl("CPVC", DT_tests[i]$file),7,6)
   
-  # get the TC location in gallons
-  DT_tests[i, `:=` (TC1_gal  = DF_header[first.TC.row  ,3],
-                    TC2_gal  = DF_header[first.TC.row+1,3],
-                    TC3_gal  = DF_header[first.TC.row+2,3],
-                    TC4_gal  = DF_header[first.TC.row+3,3],
-                    TC5_gal  = DF_header[first.TC.row+4,3],
-                    TC6_gal  = DF_header[first.TC.row+5,3],
-                    TC13_gal = DF_header[first.TC.row+6,3],
-                    TC14_gal = DF_header[first.TC.row+7,3],
-                    TC22_gal = DF_header[first.TC.row+8,3],
-                    TC23_gal = DF_header[first.TC.row+9,3])
+  # # get the TC location in gallons
+  DT_tests[i, `:=` (TC1_gal  = pluck(tb_header,3,first.TC.row  ),
+                    TC2_gal  = pluck(tb_header,3,first.TC.row+1),
+                    TC3_gal  = pluck(tb_header,3,first.TC.row+2),
+                    TC4_gal  = pluck(tb_header,3,first.TC.row+3),
+                    TC5_gal  = pluck(tb_header,3,first.TC.row+4),
+                    TC6_gal  = pluck(tb_header,3,first.TC.row+5),
+                    TC13_gal = pluck(tb_header,3,first.TC.row+6),
+                    TC14_gal = pluck(tb_header,3,first.TC.row+7),
+                    TC22_gal = pluck(tb_header,3,first.TC.row+8),
+                    TC23_gal = pluck(tb_header,3,first.TC.row+9))
            ]
+  
 
 }
              
-str(DT_tests)
-DT_tests[,2:17]
 
 # save the header data as a csv file
 write.csv(DT_tests, file= paste0(wd_data,"DT_tests.csv"), row.names = FALSE)
 
 
 
-# put this in setup.R when it's working
-# try the tidyverse readxl
-install.packages("readxl")
-library(readxl)
-
-# try it out
-tb_xlsx <-
-read_xlsx(path = l_xlxs_fns[1],
-          sheet = 1)
-
-tb_xlsx[20:30]
-# read something, needs lots of cleaning up.
