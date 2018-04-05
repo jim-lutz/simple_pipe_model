@@ -41,7 +41,12 @@
 
     manually collect data and note ranges
     see pipe_data_ranges.csv
-        
+    
+    in 12PEXBareRawData2.xlsx 10 temperatures for TC1 are 'NAN' 
+    Coercing text to numeric in E58130 / R58130C5: 'NAN'
+    
+    maybe at this stage get each Sheet1 into it's own data.table
+    then incremental cleanups.        
 
    
     
