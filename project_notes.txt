@@ -32,6 +32,11 @@
    all have the same title 
         3/4 RIGID CU RAW TEST DATA - ALL 1 SECOND DATA ?
     
+   Seems to read data from 12PEXBareRawData2.xlsx
+   still need to get the notes field 
+   When set rows too high to catch all for spreadsheets it choked
+   problems with dates because NOMINAL is in that column
+   
 
 
    

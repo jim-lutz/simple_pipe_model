@@ -1,0 +1,8 @@
+read_pipe_data.R
+    # script to read pipe data from 
+    input:  /home/jiml/HotWaterResearch/projects/How Low/Carl's data/*.xlsx
+    output: ./data/DT_test_info.Rdata
+            ./data/DT_test_info.csv
+            
+            
+            
