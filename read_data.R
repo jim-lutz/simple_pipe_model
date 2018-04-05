@@ -24,22 +24,13 @@ View(DT_test_info)
 for(i in 1:nrow(DT_test_info)) {
   
   # this is for testing on just the first spreadsheet
-  # i = 1
+  # i = 3
 
-  # read in the data as a tibble
+  # read in the data and notes as a tibble
   tb_data <- read_xlsx(path = DT_test_info[i]$file,
-                         sheet = "Sheet1",
-                         range = DT_test_info[i]$data_range, 
-                         col_names = FALSE)
-
-  # read in the notes as a tibble
-  tb_notes <- read_xlsx(path = DT_test_info[i]$file,
                        sheet = "Sheet1",
-                       range = DT_test_info[i]$notes_range, 
+                       range = cell_limits(c(24, 1), c(NA, 31)), # row 24 to end, col 1:31
                        col_names = FALSE)
-  
-  # merge notes onto data
-  tb_data <- bind_cols(tb_data,tb_notes)
 
   # convert to data.table
   DT_data.1 <- as.data.table(tb_data)
@@ -48,11 +39,6 @@ for(i in 1:nrow(DT_test_info)) {
   save(DT_data.1, file = paste0(wd_data,DT_test_info[i]$fname,".1.Rdata"))
 
   }
-# Error: Cell references aren't uniformly A1 or R1C1 format:
-# A24:R115758
-# In addition: There were 34 warnings (use warnings() to see them)
-# all but the last warning are about 'NAN' in column E
-# seems to have choked in 34CPVCBareRawData2.xlsx
 
 
 

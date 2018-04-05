@@ -46,7 +46,15 @@
     Coercing text to numeric in E58130 / R58130C5: 'NAN'
     
     maybe at this stage get each Sheet1 into it's own data.table
-    then incremental cleanups.        
+    then incremental cleanups.
+    
+    34CPVCBareRawData2.xlsx too big?
+    use unbounded rectangles. read notes and data together. trim later
+    
+    fix later
+    =========
+    timestamp is in Excel date format
+    Cu files have more columns of data        
 
    
     
