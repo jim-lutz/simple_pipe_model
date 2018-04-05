@@ -84,7 +84,7 @@ for(i in 1:nrow(DT_test_info)) {
 }
 
 # read the data ranges from pipe_data_ranges.csv
-DT_pipe_data_ranges <- as.data.table(read.csv(file = paste0(wd_data,"pipe_data_ranges.csv")))
+DT_pipe_data_ranges <- fread(file = paste0(wd_data,"pipe_data_ranges.csv"))
 
 # merge into DT_test_info
 DT_test_info <- merge(DT_test_info,DT_pipe_data_ranges)
