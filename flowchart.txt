@@ -1,6 +1,7 @@
-read_pipe_data.R
-    # script to read pipe data from 
+read_test_info.R
+    # script to read information about tests from 
     input:  /home/jiml/HotWaterResearch/projects/How Low/Carl's data/*.xlsx
+            ./data/pipe_data_ranges.csv
     output: ./data/DT_test_info.Rdata
             ./data/DT_test_info.csv
             

@@ -1,5 +1,5 @@
-# read_pipe_data.R
-# script to read pipe data from 
+# read_test_info.R
+# script to read information about tests from 
 # /home/jiml/HotWaterResearch/projects/How Low/Carl's data/*.xlsx
 # saves output to .Rdata file
 # Jim Lutz "Fri Mar 30 17:32:36 2018"
@@ -82,6 +82,12 @@ for(i in 1:nrow(DT_test_info)) {
            ]
 
 }
+
+# read the data ranges from pipe_data_ranges.csv
+DT_pipe_data_ranges <- as.data.table(read.csv(file = paste0(wd_data,"pipe_data_ranges.csv")))
+
+# merge into DT_test_info
+DT_test_info <- merge(DT_test_info,DT_pipe_data_ranges)
              
 # save the header data as a csv file
 write.csv(DT_test_info, file= paste0(wd_data,"DT_test_info.csv"), row.names = FALSE)

@@ -37,7 +37,11 @@
    When set rows too high to catch all for spreadsheets it choked
    problems with dates because NOMINAL is in that column
    
+2018-04-05
 
+    manually collect data and note ranges
+    see pipe_data_ranges.csv
+        
 
    
     
