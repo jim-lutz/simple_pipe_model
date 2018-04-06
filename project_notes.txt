@@ -51,10 +51,11 @@
     34CPVCBareRawData2.xlsx too big?
     use unbounded rectangles. read notes and data together. trim later
     
+    Cu files have more columns of data        
+
     fix later
     =========
     timestamp is in Excel date format
-    Cu files have more columns of data        
 
    
     

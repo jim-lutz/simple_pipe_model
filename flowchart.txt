@@ -5,5 +5,18 @@ read_test_info.R
     output: ./data/DT_test_info.Rdata
             ./data/DT_test_info.csv
             
-            
+read_data.R
+    # script to read TC data values from 
+    input:  /home/jiml/HotWaterResearch/projects/How Low/Carl's data/*.xlsx
+            ./data/DT_test_info.Rdata
+    output: ./data/1/*.xlsx.1.Rdata 
+    
+clean_data.1.R
+    # script to do initial cleaning on  ./data/1/*.xlsx.1.Rdata files
+    # renaming columns to keep and dropping others
+    input:  ./data/DT_test_info.Rdata
+            ./data/1/*.xlsx.1.Rdata 
+    output: ./data/2/*.Rdata 
+               
+               
             
