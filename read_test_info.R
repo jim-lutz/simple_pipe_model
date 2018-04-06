@@ -88,8 +88,27 @@ DT_pipe_data_ranges <- fread(file = paste0(wd_data,"pipe_data_ranges.csv"))
 
 # merge into DT_test_info
 DT_test_info <- merge(DT_test_info,DT_pipe_data_ranges)
-             
-# save the header data as a csv file
+
+# determine material
+DT_test_info[grepl("CU", toupper(fname)), matl:="Cu"]
+DT_test_info[grepl("PEX", fname), matl:="PEX"]
+DT_test_info[grepl("CPVC", fname), matl:="CPVC"]
+DT_test_info[,list(fname,matl)]
+
+# determine nominal diam
+DT_test_info[grepl("38", fname), nom.diam:=3/8]
+DT_test_info[grepl("12", fname), nom.diam:=1/2]
+DT_test_info[grepl("34", fname), nom.diam:=3/4]
+DT_test_info[,list(fname,nom.diam)]
+
+# determine insulation level
+DT_test_info[grepl("Bare", fname), R.value:=0]
+DT_test_info[grepl("R47", fname),  R.value:=4.7]
+DT_test_info[grepl("R52", fname),  R.value:=5.2]
+DT_test_info[grepl("R55", fname),  R.value:=5.5]
+DT_test_info[,list(fname,R.value)]
+
+# save the test info data as a csv file
 write.csv(DT_test_info, file= paste0(wd_data,"DT_test_info.csv"), row.names = FALSE)
 
 # save the test info data as an .Rdata file
