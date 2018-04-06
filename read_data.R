@@ -1,7 +1,7 @@
 # read_data.R
 # script to read TC data values from 
 # /home/jiml/HotWaterResearch/projects/How Low/Carl's data/*.xlsx
-# saves uncleaned, unlabeled data.tables as *.xlsx.1.Rdata
+# saves uncleaned, unlabeled data.tables as ./data/1/*.xlsx.1.Rdata
 # Jim Lutz "Wed Apr  4 15:44:00 2018"
 
 # set packages & etc
@@ -12,6 +12,9 @@ source("setup_wd.R")
 
 # set up wd_pipe_data
 wd_pipe_data <- "/home/jiml/HotWaterResearch/projects/How Low/Carl's data"
+
+# set up data/1/ directory
+dir.create(paste0(wd_data,"1/"))
 
 # load the test info
 load(file = paste0(wd_data, "DT_test_info.Rdata"))
@@ -36,7 +39,7 @@ for(i in 1:nrow(DT_test_info)) {
   DT_data.1 <- as.data.table(tb_data)
 
   # save data.table
-  save(DT_data.1, file = paste0(wd_data,DT_test_info[i]$fname,".1.Rdata"))
+  save(DT_data.1, file = paste0(wd_data,"1/",DT_test_info[i]$fname,".1.Rdata"))
 
   }
 
