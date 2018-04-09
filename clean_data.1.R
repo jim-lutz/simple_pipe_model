@@ -19,15 +19,11 @@ View(DT_test_info)
 # set up data/2/ directory
 dir.create(paste0(wd_data,"2/"))
 
-# get a list of all the file names
-l_1.Rdata <- list.files(path = paste0(wd_data,"1/"), pattern = "*.xlsx.1.Rdata")
-# probably better to build from DT_test_info$fname to avoid any potential sorting errors
-
 # loop through all the .1.Rdata files
 for(i in 1:nrow(DT_test_info)) {
   
   # this is for testing on just one *.xlsx.1.Rdata spreadsheet
-  i = 3
+  # i = 3
   
   # for ease of coding
   this.fname.xlsx  <- DT_test_info[i]$fname
