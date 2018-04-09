@@ -42,7 +42,7 @@ for(f in l_Rdata) {
   # 114
   
   # get rid of rows without any data
-  DT_data.2a <- DT_data.2[rowSums(is.na(DT_data.2))=ncols,]
+  DT_data.2a <- DT_data.2[rowSums(is.na(DT_data.2))!=ncols,]
   
   # find timestamp is NOMINAL or timestamp
   good.timestamp <-
@@ -50,7 +50,7 @@ for(f in l_Rdata) {
             DT_data.2a[ !(grepl("^4[0-9]{4}", timestamp)),timestamp])
   # should be TRUE 
   # check for this and warn if it doesn't happen
-  if(good.times != TRUE) { cat("timestamp has some problems in f") }
+  if(good.timestamp != TRUE) { cat("timestamp has some problems in f") }
 
   # make a nominal column
   DT_data.2a[grepl("NOMINAL", timestamp), nominal:=timestamp]
@@ -66,7 +66,28 @@ for(f in l_Rdata) {
   # how many different nominal tests
   DT_data.2b[ , list(n=length(timestamp)), by="nominal"]
 
-  # start of Excel (Windows) calendar, Excel is decimal days since
+  # find nominal GPM
+  DT_data.2b[, nominal.GPM := str_extract(nominal, "NOMINAL .+ GPM")]
+  DT_data.2b[, nominal.GPM := str_remove(nominal.GPM, "NOMINAL ")]
+  DT_data.2b[, nominal.GPM := str_remove(nominal.GPM, " GPM")]
+  DT_data.2b[, nominal.GPM := as.numeric(nominal.GPM)]
+  DT_data.2b[, list(n=length(timestamp)), by="nominal.GPM"][order(nominal.GPM)]
+
+  # check for missing nominal.GPM
+  if(nrow(DT_data.2b[is.na(nominal.GPM)])>0) { cat("nominal.GPM has some problems in f") }
+  
+  # find test.type
+  DT_data.2b[grepl("COLD", nominal) & grepl("START", nominal), test.type := "COLD START"]
+  DT_data.2b[grepl("WARM", nominal) & grepl("START", nominal), test.type := "WARM START"]
+  DT_data.2b[grepl("STEADY", nominal) & grepl("STATE", nominal), test.type := "STEADY STATE"]
+
+  # how many different test.types
+  DT_data.2b[ , list(n=length(timestamp)), by="test.type"]
+  
+  # check for missing test.types
+  if(nrow(DT_data.2b[is.na(test.type)])>0) { cat("test.types has some problems in f") }
+  
+  # start of Excel (Windows) calendar, Excel is decimal days since 1900-01-01
   starttime <- ymd("1900-01-01", tz="America/Los_Angeles")
   
   # timestamp into days & seconds
@@ -78,10 +99,19 @@ for(f in l_Rdata) {
   # convert timestamp to POSIXct, 
   DT_data.2b[ , timestamp.a := starttime + days(days.int) + seconds(seconds)]
   
-  str(DT_data.2b)
-  
+  # get rid of temporary time and date variables
+  DT_data.2b[, `:=` (timestamp   = timestamp.a,
+                     days.int    = NULL,
+                     days.dec    = NULL,
+                     seconds     = NULL,
+                     timestamp.a = NULL)
+                     ]
 
+  # rename DT_data.2b to DT_data.3 for later use
+  DT_data.3 <- DT_data.2b
   
+  # save in .Rdata
+  save(DT_data.3, file = paste0(wd_data,"3/", f))
   
-
- 
+}
+  
