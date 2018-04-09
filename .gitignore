@@ -10,6 +10,8 @@ nohistory
 # RStudio files
 .Rproj.user/
 
+# large sample spreadsheet
+large_sheet.xlsx
 
 
 
