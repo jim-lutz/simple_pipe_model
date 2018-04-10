@@ -27,12 +27,15 @@ View(DT_test_info)
 for(i in 1:nrow(DT_test_info)) {
   
   # this is for testing on just the first spreadsheet
-  # i = 3
+  # i = 1
 
+  # figure out which row to start reading data
+  toprow <- as.integer(str_sub(DT_test_info[i,]$data_range, start = 2, end = 3))
+  
   # read in the data and notes as a tibble
   tb_data <- read_xlsx(path = DT_test_info[i]$file,
                        sheet = "Sheet1",
-                       range = cell_limits(c(24, 1), c(NA, 31)), # row 24 to end, col 1:31
+                       range = cell_limits(c(toprow, 1), c(NA, 31)), # from top row to end, col 1:31
                        col_names = FALSE)
 
   # convert to data.table

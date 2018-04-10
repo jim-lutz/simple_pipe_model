@@ -26,7 +26,7 @@ l_Rdata <- list.files(path = paste0(wd_data, "2/"), pattern = "*.Rdata")
 for(f in l_Rdata) {
   
   # this is for testing on just one *.Rdata data.table
-  # f = l_Rdata[3]
+  #  f = l_Rdata[1]
   
   # load a data.table DT_data.1
   load(file = paste0(wd_data, "2/",f) )
@@ -34,6 +34,8 @@ for(f in l_Rdata) {
   # look at DT_data.2  
   DT_data.2
 
+  # str(DT_data.2)
+  
   # number of colums
   ncols <- ncol(DT_data.2)
   
