@@ -23,7 +23,7 @@ dir.create(paste0(wd_data,"2/"))
 for(i in 1:nrow(DT_test_info)) {
   
   # this is for testing on just one *.xlsx.1.Rdata spreadsheet
-  # i = 3
+  # i = 5
   
   # for ease of coding
   this.fname.xlsx  <- DT_test_info[i]$fname
@@ -108,6 +108,16 @@ for(i in 1:nrow(DT_test_info)) {
   # get rid of any columns that weren't renamed
   drop.names <- grep( "X__", names(DT_data.1), value = TRUE, invert = FALSE )
   set(DT_data.1, j = drop.names, value = NULL)
+
+  # find start and end timestamps
+  DT_span <-
+  DT_data.1[grepl("[0-9]{5}",timestamp),
+            list(start = min(timestamp),
+                 end   = max(timestamp))]
+  
+  # add start and end to DT_test_info
+  DT_test_info[fname==this.fname.xlsx, `:=` (start = DT_span[,start],
+                                             end   = DT_span[,end])]
   
   # rename DT_data.1 for later tracking
   DT_data.2 <- DT_data.1
@@ -117,5 +127,10 @@ for(i in 1:nrow(DT_test_info)) {
   
 }
   
+# and now save DT_test_info
+# save the test info data as a csv file
+write.csv(DT_test_info, file= paste0(wd_data,"DT_test_info.csv"), row.names = FALSE)
 
+# save the test info data as an .Rdata file
+save(DT_test_info, file = paste0(wd_data,"DT_test_info.Rdata"))
 
