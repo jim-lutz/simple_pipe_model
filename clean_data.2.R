@@ -26,7 +26,7 @@ l_Rdata <- list.files(path = paste0(wd_data, "2/"), pattern = "*.Rdata")
 for(f in l_Rdata) {
   
   # this is for testing on just one *.Rdata data.table
-  f = l_Rdata[3]
+  # f = l_Rdata[3]
   
   # load a data.table DT_data.1
   load(file = paste0(wd_data, "2/",f) )
@@ -50,7 +50,7 @@ for(f in l_Rdata) {
             DT_data.2a[ !(grepl("^4[0-9]{4}", timestamp)),timestamp])
   # should be TRUE 
   # check for this and warn if it doesn't happen
-  if(good.timestamp != TRUE) { cat("timestamp has some problems in f") }
+  if(good.timestamp != TRUE) { cat("timestamp has some problems in ",f,"\n") }
 
   # make a nominal column
   DT_data.2a[grepl("NOMINAL", timestamp), nominal:=timestamp]
@@ -74,7 +74,7 @@ for(f in l_Rdata) {
   DT_data.2b[, list(n=length(timestamp)), by="nominal.GPM"][order(nominal.GPM)]
 
   # check for missing nominal.GPM
-  if(nrow(DT_data.2b[is.na(nominal.GPM)])>0) { cat("nominal.GPM has some problems in f") }
+  if(nrow(DT_data.2b[is.na(nominal.GPM)])>0) { cat("nominal.GPM has some problems in ", f,"\n") }
   
   # find test.type
   DT_data.2b[grepl("COLD", nominal) & grepl("START", nominal), test.type := "COLD START"]
@@ -85,7 +85,7 @@ for(f in l_Rdata) {
   DT_data.2b[ , list(n=length(timestamp)), by="test.type"]
   
   # check for missing test.types
-  if(nrow(DT_data.2b[is.na(test.type)])>0) { cat("test.types has some problems in f") }
+  if(nrow(DT_data.2b[is.na(test.type)])>0) { cat("test.types has some problems in ", f,"\n") }
   
   # start of Excel (Windows) calendar, Excel is decimal days since 1900-01-01
   starttime <- ymd("1900-01-01", tz="America/Los_Angeles")
