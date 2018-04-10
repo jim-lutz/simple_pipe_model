@@ -52,6 +52,10 @@ library(lubridate)
 if(!require(readxl)){install.packages("readxl")}
 library(readxl)
 
+# janitor for excel_numeric_to_date and other goodies
+if(!require(janitor)){install.packages("janitor")}
+library(janitor)
+
 # work with stringr 
 # if(!require(stringr)){install.packages("stringr")}
 # library(stringr)

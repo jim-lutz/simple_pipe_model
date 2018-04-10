@@ -17,6 +17,15 @@ load(file = paste0(wd_data, "DT_test_info.Rdata"))
 # look at DT_test_info
 View(DT_test_info)
 
+str(DT_test_info)
+
+# use janitor excel_numeric_to_date on dates
+DT_test_info[, `:=` (start1 = excel_numeric_to_date(as.numeric(start)),
+                     end1   = excel_numeric_to_date(as.numeric(end)))]
+
+
+DT_
+
 # start of Excel (Windows) calendar, Excel is decimal days since 1900-01-01
 starttime <- ymd("1900-01-01", tz="America/Los_Angeles")
 
