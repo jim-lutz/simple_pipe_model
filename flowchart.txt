@@ -18,5 +18,11 @@ clean_data.1.R
             ./data/1/*.xlsx.1.Rdata 
     output: ./data/2/*.Rdata 
                
+clean_data.2.R
+    # script to do clean up nominal from timestamp ./data/2/*.Rdata files
+    # also converts timestamp back to POSIXct
+    input:  ./data/DT_test_info.Rdata
+            ./data/2/*.Rdata 
+    output: ./data/3/*.Rdata 
                
             

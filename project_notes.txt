@@ -60,6 +60,10 @@
 2018-04-09
     nominal & test flag as separate columns?
     
+    processed timestamp for NOMINAL and other glitches
+    
+    work on testflag next
+    
    
     
     
