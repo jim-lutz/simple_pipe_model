@@ -45,13 +45,18 @@ for(f in l_Rdata) {
   # [1] 0
   
   # look at suspicious timestamp
-  DT_data.3[ymd_hms("2009-11-15 06:53:30", tz = "America/Los_Angeles") < timestamp &
-              timestamp < ymd_hms("2009-11-15 06:53:50", tz = "America/Los_Angeles"),
+  DT_data.3[ymd_hms("2009-11-13 02:51:20", tz = "America/Los_Angeles") < timestamp &
+              timestamp < ymd_hms("2009-11-13 02:59:20", tz = "America/Los_Angeles"),
             list(timestamp, TestFlag)]
+ 
+  attributes(DT_data.3[,timestamp]) 
   
-  # timestamps don't match those in spreadsheet?
+  # timestamps match those in spreadsheet
   DT_data.3[, list(start = min(timestamp),
                    end   = max(timestamp))]
   #                  start                 end
   # 1: 2009-11-15 02:51:13 2009-12-08 06:31:31  
+  
+  
+  DT_data.3[1:10,timestamp]
   
