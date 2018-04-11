@@ -76,4 +76,6 @@
     
     revise clean_data.1.R to pull start and end timestamps into DT_test_info, both .csv & .Rdata
     
+    Excel time! origin="1899-12-30"
+    time zones! tz = "UTC" then force_tz  tzone = "America/Los_Angeles"
         

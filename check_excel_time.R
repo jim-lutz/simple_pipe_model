@@ -12,46 +12,63 @@ source("setup_wd.R")
 # load the test info
 load(file = paste0(wd_data, "DT_test_info.Rdata"))
 
-# 
-
 # look at DT_test_info
 View(DT_test_info)
 
 str(DT_test_info)
+# note start and end are chr not num
 
-# use janitor excel_numeric_to_date on dates
-DT_test_info[, `:=` (start1 = excel_numeric_to_date(as.numeric(start)),
-                     end1   = excel_numeric_to_date(as.numeric(end)))]
+# # start of Excel (Windows) calendar, Excel is decimal days since 1900-01-01
+# starttime <- ymd("1900-01-01", tz="America/Los_Angeles")
+# 
+# str(starttime)
+# 
+# # check R days between 2009-11-13 and 1900-01-01, 40130 from spreadsheet
+# testdate <- ymd("2009-11-13", tz="America/Los_Angeles")
+# 
+# str(difftime(testdate, starttime, units = "days"))
+# # Class 'difftime'  atomic [1:1] 40128
+# #   ..- attr(*, "units")= chr "days"
 
+# R is probably missing leap years or something
+# see https://stackoverflow.com/questions/19172632/converting-excel-datetime-serial-number-to-r-datetime
 
-DT_
-
-# start of Excel (Windows) calendar, Excel is decimal days since 1900-01-01
-starttime <- ymd("1900-01-01", tz="America/Los_Angeles")
-
-# timestamp into days & seconds
-DT_test_info[, `:=` (days.int = as.integer(start),
-                     days.dec = as.numeric(start))
-           ]
-DT_test_info[, seconds := (days.dec-days.int) * 24 * 60 * 60 ]
-
-# convert timestamp to POSIXct, 
-DT_test_info[ , timestamp.a := starttime + days(days.int) + seconds(seconds)]
-
-# # get rid of temporary time and date variables
-# DT_test_info[, `:=` (timestamp   = timestamp.a,
-#                    days.int    = NULL,
-#                    days.dec    = NULL,
-#                    seconds     = NULL,
-#                    timestamp.a = NULL)
-#            ]
-
-# in a format to paste into spreadsheet
-DT_test_info[,list(timestamp.a)]
-
-# days from starttime
-DT_test_info[, `:=` (days.int = as.integer(start),
-                     days.R   = difftime(timestamp.a, starttime, units = "days"))
+# serial dates as.numeric
+DT_test_info[, `:=` (start.num = (as.numeric(start)),
+                     end.num   = (as.numeric(  end)))
              ]
+str(DT_test_info)
+DT_test_info[,list(start.num, end.num)]
 
-DT_test_info[,list(start, days.R)]
+# serial dates as.Date
+DT_test_info[, `:=` (start.ct = as.POSIXct(start.num * 24*60*60,
+                                           origin="1899-12-30",
+                                           tz = "UTC"),
+                     end.ct   = as.POSIXct(end.num * 24*60*60,
+                                           origin="1899-12-30",
+                                           tz = "UTC"))
+             ]
+str(DT_test_info)
+DT_test_info[,list(fname, start.num, start.ct, end.num, end.ct)]
+attributes(DT_test_info$start.ct)
+attributes(DT_test_info$end.ct)
+
+# change the timezones
+force_tz(DT_test_info$start.ct, tzone = "America/Los_Angeles")
+force_tz(DT_test_info$end.ct, tzone = "America/Los_Angeles")
+
+# look at what happened
+DT_test_info[,list(fname, start.num, start.ct, end.num, end.ct)]
+attributes(DT_test_info$start.ct)
+attributes(DT_test_info$end.ct)
+
+
+
+# save the test info data as a csv file
+write.csv(DT_test_info, file= paste0(wd_data,"DT_test_info.csv"), row.names = FALSE)
+
+# save the test info data as an .Rdata file
+save(DT_test_info, file = paste0(wd_data,"DT_test_info.Rdata"))
+
+
+
