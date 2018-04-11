@@ -115,13 +115,19 @@ for(f in l_Rdata) {
   
   # convert numeric serial dates to POSIXct
   DT_data.2b[, timestamp.ct := as.POSIXct(timestamp.num * 24*60*60,
-                                         origin="1899-12-30",
-                                         tz = "UTC")
+                                         origin=as.POSIXct("1899-12-30", tz="America/Los_Angeles"),
+                                         tz = "America/Los_Angeles")
                ]
   
+  # cleanup the timestamps
+  DT_data.2b[, `:=` (timestamp     = timestamp.ct,
+                     timestamp.num = NULL,
+                     timestamp.ct  = NULL)
+             ]
+  
   # force the timezone to "America/Los_Angeles" without changing clock time
-  force_tz(DT_data.2b$timestamp.ct, tzone = "America/Los_Angeles")
-
+  force_tz(DT_data.2b[,timestamp], tzone = "America/Los_Angeles")
+  
   # rename DT_data.2b to DT_data.3 for later use
   DT_data.3 <- DT_data.2b
   
