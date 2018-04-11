@@ -115,7 +115,7 @@ for(i in 1:nrow(DT_test_info)) {
             list(start = min(timestamp),
                  end   = max(timestamp))]
   
-  # add start and end to DT_test_info
+  # add start and end to DT_test_info, at this point these are chr of Excel serial numbers
   DT_test_info[fname==this.fname.xlsx, `:=` (start = DT_span[,start],
                                              end   = DT_span[,end])]
   

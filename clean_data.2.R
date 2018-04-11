@@ -110,26 +110,17 @@ for(f in l_Rdata) {
     cat("test.types missing for all records in ", f,"\n")
   }
     
+  # convert timestamp from chr Excel serial number to numeric
+  DT_data.2b[, timestamp.num := as.numeric(timestamp)]
   
-  # start of Excel (Windows) calendar, Excel is decimal days since 1900-01-01
-  starttime <- ymd("1900-01-01", tz="America/Los_Angeles")
+  # convert numeric serial dates to POSIXct
+  DT_data.2b[, timestamp.ct := as.POSIXct(timestamp.num * 24*60*60,
+                                         origin="1899-12-30",
+                                         tz = "UTC")
+               ]
   
-  # timestamp into days & seconds
-  DT_data.2b[, `:=` (days.int = as.integer(timestamp),
-                     days.dec = as.numeric(timestamp))
-             ]
-  DT_data.2b[, seconds := (days.dec-days.int) * 24 * 60 * 60 ]
-  
-  # convert timestamp to POSIXct, 
-  DT_data.2b[ , timestamp.a := starttime + days(days.int) + seconds(seconds)]
-  
-  # get rid of temporary time and date variables
-  DT_data.2b[, `:=` (timestamp   = timestamp.a,
-                     days.int    = NULL,
-                     days.dec    = NULL,
-                     seconds     = NULL,
-                     timestamp.a = NULL)
-                     ]
+  # force the timezone to "America/Los_Angeles" without changing clock time
+  force_tz(DT_data.2b$timestamp.ct, tzone = "America/Los_Angeles")
 
   # rename DT_data.2b to DT_data.3 for later use
   DT_data.3 <- DT_data.2b
