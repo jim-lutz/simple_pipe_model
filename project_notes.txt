@@ -84,5 +84,11 @@
             origin=as.POSIXct("1899-12-30", tz="America/Los_Angeles"),
             tz = "America/Los_Angeles")
     
+2018-04-13
+    in 12PEXBareRawData2 at least 5 rows after TestFlag=="START" and 
+    5 rows before TestFlag=="END" are comments on test type.
+    one TestFlag=="END" is missing.
     
-        
+    script to collect test segment information for all data sets to see what 
+    needs to be fixed by hand.
+    

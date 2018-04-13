@@ -1,5 +1,5 @@
 # clean_data.3.R
-# script to do clean up testflag in ./data/3/*.Rdata files
+# script to identify Carl's test segments in ./data/3/*.Rdata files
 # saves data.tables as ./data/4/*.Rdata
 # Jim Lutz "Tue Apr 10 05:52:59 2018"
 
@@ -44,19 +44,54 @@ for(f in l_Rdata) {
   anyDuplicated(DT_data.3[,timestamp])
   # [1] 0
   
-  # look at suspicious timestamp
-  DT_data.3[ymd_hms("2009-11-13 02:51:20", tz = "America/Los_Angeles") < timestamp &
-              timestamp < ymd_hms("2009-11-13 02:59:20", tz = "America/Los_Angeles"),
-            list(timestamp, TestFlag)]
- 
+  # make sure it's POSIXct and right time zone
   attributes(DT_data.3[,timestamp]) 
+  # $class
+  # [1] "POSIXct" "POSIXt" 
+  # 
+  # $tzone
+  # [1] "America/Los_Angeles"
   
   # timestamps match those in spreadsheet
   DT_data.3[, list(start = min(timestamp),
                    end   = max(timestamp))]
   #                  start                 end
-  # 1: 2009-11-15 02:51:13 2009-12-08 06:31:31  
+  # 1: 2009-11-13 02:51:13 2009-12-06 06:31:32
   
+  # see if START and ENDs match
+  DT_data.3[TestFlag=="START" | TestFlag=="END",  list(timestamp,TestFlag)]
+  # appear to
   
-  DT_data.3[1:10,timestamp]
+  # count START and ENDs
+  DT_data.3[TestFlag=="START" | TestFlag=="END",  list(timestamp,TestFlag), 
+            by=TestFlag][ ,list(n=length(timestamp)), by=TestFlag]
+  #    TestFlag  n
+  # 1:    START 60
+  # 2:      END 59
+  # not quite
+  
+  # TestFlag and timestamp only
+  DT_TFt <- DT_data.3[TestFlag=="START" | TestFlag=="END", list(TestFlag,timestamp)]
+
+  # add a variable identifying testnum
+  DT_TFt[,testnum := cumsum(TestFlag=="START")]
+  
+  # now cast
+  DT_test <- dcast(DT_TFt, testnum ~ TestFlag, value.var = "timestamp")
+
+  # reset the column order
+  setcolorder(DT_test, c("testnum","START","END"))
+  
+  # see which STARTs are after the ENDs
+  DT_test[END<START,]
+  # none
+  DT_test[is.na(END)|is.na(START),]
+  #    testnum               START  END
+  # 1:      10 2009-11-13 08:38:11 <NA>
+  
+  #looking at spreadsheet should probably be at
+  #       timestamp record
+  # 11/13/2009 8:52	808382
+  
+    
   

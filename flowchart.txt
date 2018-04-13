@@ -19,10 +19,16 @@ clean_data.1.R
     output: ./data/2/*.Rdata 
                
 clean_data.2.R
-    # script to do clean up nominal from timestamp ./data/2/*.Rdata files
+    # script to clean up nominal from timestamp ./data/2/*.Rdata files
     # also converts timestamp back to POSIXct
     input:  ./data/DT_test_info.Rdata
             ./data/2/*.Rdata 
     output: ./data/3/*.Rdata 
                
+clean_data.3.R
+    # script to identify Carl's test segments in ./data/3/*.Rdata files    
+    input:  ./data/DT_test_info.Rdata
+            ./data/3/*.Rdata 
+    output: 
+not finished yet               
             
