@@ -82,6 +82,9 @@ for(f in l_Rdata) {
   # reset the column order
   setcolorder(DT_test, c("testnum","START","END"))
   
+  # look at it
+  DT_test
+  
   # see which STARTs are after the ENDs
   DT_test[END<START,]
   # none
@@ -93,5 +96,27 @@ for(f in l_Rdata) {
   #       timestamp record
   # 11/13/2009 8:52	808382
   
-    
+  # collect comments 5 records before and after START and END
+  # build lead & lag columns
+  DT_lag_comments <- DT_data.3[,shift(TestFlag,n = 5:1, type = "lag", give.names = TRUE)]
+  DT_lead_comments <- DT_data.3[,shift(TestFlag,n = 1:5, type = "lead", give.names = TRUE)]
+ 
+  # combine the lead & lag columns into DT_data.3 
+  DT_comments <- data.table(DT_data.3,DT_lag_comments,DT_lead_comments)
+  
+  # list of lead/lag_comment column names
+  lead_lag_cols <- grep("TestFlag_", names(DT_comments), value = TRUE)
+  
+  # build comment
+  DT_comments[, comment:= do.call(paste, c(DT_comments[,lead_lag_cols,with=FALSE]))]
+  
+  # remove the lead_lag_cols
+  set(DT_comments, j=lead_lag_cols, value = NULL)
+  
+  # keep comment only if there's something in TestFlag
+  DT_comments[is.na(TestFlag), comment := NA ]
+  
+  # remove "NA" from comment
+  DT_comments[,comment:= str_remove_all(comment,"NA")]
+  DT_comments[,comment:= str_trim(comment,"both")]
   

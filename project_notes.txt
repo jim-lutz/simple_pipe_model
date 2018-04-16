@@ -92,3 +92,9 @@
     script to collect test segment information for all data sets to see what 
     needs to be fixed by hand.
     
+2018-04-16
+    figure out some way to collect comments
+    near START & END
+    look at other comments?
+    number tests?
+        
