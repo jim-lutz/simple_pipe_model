@@ -31,6 +31,9 @@ for(f in l_Rdata) {
   # this is for testing on just one *.Rdata data.table
   #  f = l_Rdata[1]
   
+  # filename w/o extension
+  bfname = str_remove(f,".Rdata")
+  
   # load a data.table DT_data.3
   load(file = paste0(wd_data_in,f) )
   
@@ -38,37 +41,47 @@ for(f in l_Rdata) {
   DT_data.3
 
   # look at TestFlag
-  View(DT_data.3[!is.na(TestFlag), list(timestamp,TestFlag)])
+  # View(DT_data.3[!is.na(TestFlag), list(timestamp,TestFlag)])
   
-  # see if there are any duplicate timestamps
-  anyDuplicated(DT_data.3[,timestamp])
-  # [1] 0
+  # report if there are any duplicate timestamps
+  if( anyDuplicated(DT_data.3[,timestamp]) ) { 
+    cat("duplicate timestamps in ", f,"\n") 
+    }
+
+  # check attributes to make sure it's POSIXct and right time zone
+  atimestamp <- attributes(DT_data.3[,timestamp]) 
+  if(atimestamp$class[1] != "POSIXct") {
+    cat("a timestamp in ", f," is not POSIXct","\n") 
+  }
+  if(atimestamp$tzone!="America/Los_Angeles") {
+    cat("a time zone in ", f," is not America/Los_Angeles","\n") 
+  }
   
-  # make sure it's POSIXct and right time zone
-  attributes(DT_data.3[,timestamp]) 
-  # $class
-  # [1] "POSIXct" "POSIXt" 
-  # 
-  # $tzone
-  # [1] "America/Los_Angeles"
+  # do start and end timestamps match those in DT_test_info spreadsheet
+  timestamp.data <- 
+    DT_data.3[, list(start = min(timestamp),end = max(timestamp))]
+
+  timestamp.info <- # need to force these times to America/Los_Angeles
+    DT_test_info[fname==paste0(bfname, ".xlsx"), 
+                 list(start = force_tz(start.ct, tzone = "America/Los_Angeles"), 
+                      end = force_tz(end.ct, tzone = "America/Los_Angeles")
+                 )]
+  if( !identical(timestamp.data$start,timestamp.info$start) ) {
+    cat("start and end times in ", f, " and DT_test_info do not match","\n") 
+  }
   
-  # timestamps match those in spreadsheet
-  DT_data.3[, list(start = min(timestamp),
-                   end   = max(timestamp))]
-  #                  start                 end
-  # 1: 2009-11-13 02:51:13 2009-12-06 06:31:32
+  # get the START and END TestFlags match
+  DT_SE_TestFlags <-
+    DT_data.3[TestFlag=="START" | TestFlag=="END",  list(timestamp,TestFlag), 
+              by=TestFlag][ ,list(n=length(timestamp)), by=TestFlag]
   
-  # see if START and ENDs match
-  DT_data.3[TestFlag=="START" | TestFlag=="END",  list(timestamp,TestFlag)]
-  # appear to
+  # report if the number of START and END TestFlags don't match
+  if(DT_SE_TestFlags[TestFlag=="START",n]!=DT_SE_TestFlags[TestFlag=="END",n]) {
+    cat("different number of STARTs and ENDs in ", f, "\n") 
+    }
   
-  # count START and ENDs
-  DT_data.3[TestFlag=="START" | TestFlag=="END",  list(timestamp,TestFlag), 
-            by=TestFlag][ ,list(n=length(timestamp)), by=TestFlag]
-  #    TestFlag  n
-  # 1:    START 60
-  # 2:      END 59
-  # not quite
+  
+  
   
   # TestFlag and timestamp only
   DT_TFt <- DT_data.3[TestFlag=="START" | TestFlag=="END", list(TestFlag,timestamp)]

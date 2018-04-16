@@ -97,4 +97,7 @@
     near START & END
     look at other comments?
     number tests?
-        
+    
+    1899-12-30 21:14:17 timestamp in 34RigidCuBareRawData1.xlsx?
+
+    
