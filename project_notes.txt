@@ -100,4 +100,14 @@
     
     1899-12-30 21:14:17 timestamp in 34RigidCuBareRawData1.xlsx?
 
+    finding and fixing anamolous data in ./data/3/*.Rdata 
+    
+    fix anomalous data using separate program for each bfname 
+    source after loading DT_data.3
+    
+    identify records that are part of a test
+    
+    DT_tests {START, END, comment) save /4/{bfname}_test.Rdata
+    DT_data { ..., comment (across test records only), other.comment }
+    
     

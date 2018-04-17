@@ -31,7 +31,7 @@ for(f in l_Rdata) {
   # this is for testing on just one *.Rdata data.table
   #  f = l_Rdata[1]
   
-  # filename w/o extension
+  # bare filename w/o extension
   bfname = str_remove(f,".Rdata")
   
   # load a data.table DT_data.3
@@ -48,11 +48,13 @@ for(f in l_Rdata) {
     cat("duplicate timestamps in ", f,"\n") 
     }
 
-  # check attributes to make sure it's POSIXct and right time zone
+  # check attributes to :
+  # make sure it's POSIXct 
   atimestamp <- attributes(DT_data.3[,timestamp]) 
   if(atimestamp$class[1] != "POSIXct") {
     cat("a timestamp in ", f," is not POSIXct","\n") 
   }
+  # make sure it's the right time zone
   if(atimestamp$tzone!="America/Los_Angeles") {
     cat("a time zone in ", f," is not America/Los_Angeles","\n") 
   }
@@ -70,7 +72,7 @@ for(f in l_Rdata) {
     cat("start and end times in ", f, " and DT_test_info do not match","\n") 
   }
   
-  # get the START and END TestFlags match
+  # get the START and END TestFlags 
   DT_SE_TestFlags <-
     DT_data.3[TestFlag=="START" | TestFlag=="END",  list(timestamp,TestFlag), 
               by=TestFlag][ ,list(n=length(timestamp)), by=TestFlag]
@@ -80,9 +82,6 @@ for(f in l_Rdata) {
     cat("different number of STARTs and ENDs in ", f, "\n") 
     }
   
-  
-  
-  
   # TestFlag and timestamp only
   DT_TFt <- DT_data.3[TestFlag=="START" | TestFlag=="END", list(TestFlag,timestamp)]
 
@@ -90,41 +89,42 @@ for(f in l_Rdata) {
   DT_TFt[,testnum := cumsum(TestFlag=="START")]
   
   # now cast
-  DT_test <- dcast(DT_TFt, testnum ~ TestFlag, value.var = "timestamp")
+  DT_tests <- dcast(DT_TFt, testnum ~ TestFlag, value.var = "timestamp")
 
+  # remove DT_Tft, no longer needed
+  rm(DT_Tft)
+  
   # reset the column order
-  setcolorder(DT_test, c("testnum","START","END"))
+  setcolorder(DT_tests, c("testnum","START","END"))
   
   # look at it
-  DT_test
+  DT_tests
   
-  # see which STARTs are after the ENDs
-  DT_test[END<START,]
-  # none
-  DT_test[is.na(END)|is.na(START),]
-  #    testnum               START  END
-  # 1:      10 2009-11-13 08:38:11 <NA>
+  # something like evalq(paste0("source(",bfname,".find-N-fix-TF.R"))) goes here
+  # where bfname.find-N-fix-TF.R is code find and fix anomalies in TestFlag
+  # in DT_data.3 for bfname 
   
-  #looking at spreadsheet should probably be at
-  #       timestamp record
-  # 11/13/2009 8:52	808382
-  
-  # collect comments 5 records before and after START and END
+  # collect comments for 5 records before and after every START and END
   # build lead & lag columns
   DT_lag_comments <- DT_data.3[,shift(TestFlag,n = 5:1, type = "lag", give.names = TRUE)]
   DT_lead_comments <- DT_data.3[,shift(TestFlag,n = 1:5, type = "lead", give.names = TRUE)]
  
-  # combine the lead & lag columns into DT_data.3 
+  # combine the lead & lag columns into DT_table 
   DT_comments <- data.table(DT_data.3,DT_lag_comments,DT_lead_comments)
   
   # list of lead/lag_comment column names
-  lead_lag_cols <- grep("TestFlag_", names(DT_comments), value = TRUE)
-  
+  lead_lag_cols <- c(
+    grep("TestFlag_lag", names(DT_comments), value = TRUE),
+    "TestFlag",
+    grep("TestFlag_lead", names(DT_comments), value = TRUE)
+  )
+    
   # build comment
   DT_comments[, comment:= do.call(paste, c(DT_comments[,lead_lag_cols,with=FALSE]))]
   
-  # remove the lead_lag_cols
-  set(DT_comments, j=lead_lag_cols, value = NULL)
+  # remove the lag and lead columns
+  set(DT_comments, j=grep("TestFlag_lag", names(DT_comments), value = TRUE), value = NULL)
+  set(DT_comments, j=grep("TestFlag_lead", names(DT_comments), value = TRUE), value = NULL)
   
   # keep comment only if there's something in TestFlag
   DT_comments[is.na(TestFlag), comment := NA ]
@@ -132,4 +132,23 @@ for(f in l_Rdata) {
   # remove "NA" from comment
   DT_comments[,comment:= str_remove_all(comment,"NA")]
   DT_comments[,comment:= str_trim(comment,"both")]
+  
+  # make other.comments column for comments that don't include START or END
+  DT_comments[!is.na(comment) & !( str_detect(comment,"END") |
+                                     str_detect(comment,"START") ) ,
+              other.comment := comment]
+
+  # remove comments that don't include START or END
+  DT_other_comments <-
+    DT_comments[!is.na(comment) & !( str_detect(comment,"END") |
+                                       str_detect(comment,"START") ) ,
+                comment := NA]
+
+  # list the other comments
+  DT_comments[, list(n=length(record)), by=other.comment]
+  
+  # list comments
+  DT_comments[, list(n=length(record)), by=comment]
+  
+}  
   
