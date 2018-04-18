@@ -110,4 +110,6 @@
     DT_tests {START, END, comment) save /4/{bfname}_test.Rdata
     DT_data { ..., comment (across test records only), other.comment }
     
-    
+2018-04-18
+    starting to build 12PEXBareRawData2.findNfixTF.R to find and fix anomalies in 
+    12PEXBareRawData2

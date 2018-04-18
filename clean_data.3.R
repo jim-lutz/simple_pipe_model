@@ -9,6 +9,9 @@ source("setup.R")
 # set up paths to working directories
 source("setup_wd.R")
 
+# get some useful functions
+source("functions.R")
+
 # load the test info
 load(file = paste0(wd_data, "DT_test_info.Rdata"))
 
@@ -40,9 +43,17 @@ for(f in l_Rdata) {
   # look at DT_data.3  
   DT_data.3
 
-  # look at TestFlag
-  # View(DT_data.3[!is.na(TestFlag), list(timestamp,TestFlag)])
+  # clean up TestFlag entries by bfname
+
+  # build file name to source
+  FNFR.fname <- paste0(wd,"/",bfname,".findNfixTF.R")
   
+  # source the file
+  source(file = FNFR.fname )
+    
+  # tests on data
+  # =============
+    
   # report if there are any duplicate timestamps
   if( anyDuplicated(DT_data.3[,timestamp]) ) { 
     cat("duplicate timestamps in ", f,"\n") 
@@ -81,28 +92,6 @@ for(f in l_Rdata) {
   if(DT_SE_TestFlags[TestFlag=="START",n]!=DT_SE_TestFlags[TestFlag=="END",n]) {
     cat("different number of STARTs and ENDs in ", f, "\n") 
     }
-  
-  # TestFlag and timestamp only
-  DT_TFt <- DT_data.3[TestFlag=="START" | TestFlag=="END", list(TestFlag,timestamp)]
-
-  # add a variable identifying testnum
-  DT_TFt[,testnum := cumsum(TestFlag=="START")]
-  
-  # now cast
-  DT_tests <- dcast(DT_TFt, testnum ~ TestFlag, value.var = "timestamp")
-
-  # remove DT_Tft, no longer needed
-  rm(DT_Tft)
-  
-  # reset the column order
-  setcolorder(DT_tests, c("testnum","START","END"))
-  
-  # look at it
-  DT_tests
-  
-  # something like evalq(paste0("source(",bfname,".find-N-fix-TF.R"))) goes here
-  # where bfname.find-N-fix-TF.R is code find and fix anomalies in TestFlag
-  # in DT_data.3 for bfname 
   
   # collect comments for 5 records before and after every START and END
   # build lead & lag columns
