@@ -113,3 +113,34 @@
 2018-04-18
     starting to build 12PEXBareRawData2.findNfixTF.R to find and fix anomalies in 
     12PEXBareRawData2
+    
+2018-04-19
+    rename to findNfixTF.12PEXBareRawData2.R
+    
+    TestFlag contains
+    START 1/2 PEX BARE IN-AIR WARM TEST 7
+        START|END
+        nom pipe diam
+        pipe matl
+        insulation level
+        IN-AIR
+        COLD|WARM
+        TEST #, some are repeated
+    
+    Parse into
+        test.edge
+        nom.pipe.diam
+        pipe.matl
+        insul.level
+        ?
+        test.num <- only between appropriate START and END 
+
+    These are in the filename, just confirm they match?        
+        nom.pipe.diam
+        pipe.matl
+        insul.level
+        
+    Only doing IN-AIR, check consistency but not deal with it    
+            
+    COLD|WARM don't match test.type derived from nominal?
+    figure out what's going on here

@@ -46,20 +46,20 @@ for(f in l_Rdata) {
   # clean up TestFlag entries by bfname
 
   # build file name of the findNfixTF.R file to source
-  FNFR.fname <- paste0(wd,"/",bfname,".findNfixTF.R")
+  FNFR.fname <- paste0(wd,"/findNfixTF.",bfname,".R")
   
   # source the file
   source(file = FNFR.fname )
     
-  # tests on data
-  # =============
+  # tests on DT_data.3
+  # ==================
     
   # report if there are any duplicate timestamps
   if( anyDuplicated(DT_data.3[,timestamp]) ) { 
     cat("duplicate timestamps in ", f,"\n") 
     }
 
-  # check attributes to :
+  # check attributes of timestamp to :
   # make sure it's POSIXct 
   atimestamp <- attributes(DT_data.3[,timestamp]) 
   if(atimestamp$class[1] != "POSIXct") {
