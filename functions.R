@@ -1,7 +1,7 @@
 # functions.R
 # R functions to help with shower clearing draw analysis
 
-START.END.TestFlags <- function(DT_data.3) {
+nSTART.END.TestFlags <- function(DT_data.3) {
   # function to view the number of START and END TestFlags 
   
   # TestFlag and timestamp only

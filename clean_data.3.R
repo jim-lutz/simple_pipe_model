@@ -45,7 +45,7 @@ for(f in l_Rdata) {
 
   # clean up TestFlag entries by bfname
 
-  # build file name to source
+  # build file name of the findNfixTF.R file to source
   FNFR.fname <- paste0(wd,"/",bfname,".findNfixTF.R")
   
   # source the file
@@ -74,7 +74,7 @@ for(f in l_Rdata) {
   timestamp.data <- 
     DT_data.3[, list(start = min(timestamp),end = max(timestamp))]
 
-  timestamp.info <- # need to force these times to America/Los_Angeles
+  timestamp.info <- # need to force the spreadsheet times to America/Los_Angeles
     DT_test_info[fname==paste0(bfname, ".xlsx"), 
                  list(start = force_tz(start.ct, tzone = "America/Los_Angeles"), 
                       end = force_tz(end.ct, tzone = "America/Los_Angeles")
@@ -92,6 +92,10 @@ for(f in l_Rdata) {
   if(DT_SE_TestFlags[TestFlag=="START",n]!=DT_SE_TestFlags[TestFlag=="END",n]) {
     cat("different number of STARTs and ENDs in ", f, "\n") 
     }
+  
+  
+  # This is the end of the QA testing
+  # Now build comments
   
   # collect comments for 5 records before and after every START and END
   # build lead & lag columns
@@ -127,7 +131,7 @@ for(f in l_Rdata) {
                                      str_detect(comment,"START") ) ,
               other.comment := comment]
 
-  # remove comments that don't include START or END
+  # turn comments that don't include START or END into NA 
   DT_other_comments <-
     DT_comments[!is.na(comment) & !( str_detect(comment,"END") |
                                        str_detect(comment,"START") ) ,
@@ -136,7 +140,7 @@ for(f in l_Rdata) {
   # list the other comments
   DT_comments[, list(n=length(record)), by=other.comment]
   
-  # list comments
+  # list comments, these should just be about the tests
   DT_comments[, list(n=length(record)), by=comment]
   
 }  
