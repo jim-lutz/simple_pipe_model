@@ -148,3 +148,5 @@
 2018-04-20
     figure out a generic way to parse TestFlag into 
     test.edge, nom.pipe.diam, pipe.matl, insul.level, cold.warm, test.num
+    
+    don't forget to check '.' to 'COOL DOWN'

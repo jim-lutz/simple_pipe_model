@@ -87,16 +87,26 @@ DT_data.3[, list(n=length(record)), by=pipe.matl]
 
 # insulation level
 # -------------
-DT_data.3[!is.na(TestFlag), list(n=length(record)), by=TestFlag]
 DT_data.3[grepl("BARE|R52|R47|R55",TestFlag), 
           list(n=length(record)), by=TestFlag]
 DT_data.3[grepl("BARE|R52|R47|R55",TestFlag) & is.na(insul.level), 
           insul.level := str_match(TestFlag, "(BARE|R52|R47|R55)")[2]]
-DT_data.3[!is.na(pipe.matl), list(n=length(record)), by=pipe.matl]
+DT_data.3[, list(n=length(record)), by=insul.level]
 
+# COLD WARM
+# -------------
+DT_data.3[grepl("COLD|WARM",TestFlag), 
+          list(n=length(record)), by=TestFlag]
+DT_data.3[grepl("COLD|WARM",TestFlag) & is.na(cold.warm), 
+          cold.warm := str_match(TestFlag, "(COLD|WARM)")[2]]
+DT_data.3[, list(n=length(record)), by=cold.warm]
 
-
-
+# test number
+DT_data.3[grepl("TEST",TestFlag), 
+          list(n=length(record)), by=TestFlag]
+DT_data.3[grepl("TEST",TestFlag) & is.na(test.num), 
+          test.num := TestFlag]
+DT_data.3[, list(n=length(record)), by=test.num]
 
 
 

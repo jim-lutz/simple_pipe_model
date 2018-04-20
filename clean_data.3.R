@@ -43,10 +43,12 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # look at DT_data.3  
   DT_data.3
 
-  # add empty nom.pipe.diam, pipe.matl, insul.level columns to DT_data.3
+  # add empty columns to DT_data.3
   DT_data.3[, `:=` (nom.pipe.diam = as.character(),
                     pipe.matl     = as.character(),
-                    insul.level   = as.character())
+                    insul.level   = as.character(),
+                    cold.warm     = as.character(),
+                    test.num      = as.character())
             ]
   
   # extract nom.pipe.diam, pipe.matl, insul.level from file name
