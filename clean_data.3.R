@@ -29,10 +29,10 @@ wd_data_out   = paste0(wd_data, "4/")
 l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 
 # loop through all the files
-for(f in l_Rdata) {
+# for(f in l_Rdata) {
   
   # this is for testing on just one *.Rdata data.table
-  #  f = l_Rdata[1]
+  f = l_Rdata[1]
   
   # bare filename w/o extension
   bfname = str_remove(f,".Rdata")
@@ -43,23 +43,33 @@ for(f in l_Rdata) {
   # look at DT_data.3  
   DT_data.3
 
-  # clean up TestFlag entries by bfname
-
-  # build file name of the findNfixTF.R file to source
-  FNFR.fname <- paste0(wd,"/findNfixTF.",bfname,".R")
+  # add empty nom.pipe.diam, pipe.matl, insul.level columns to DT_data.3
+  DT_data.3[, `:=` (nom.pipe.diam = as.character(),
+                    pipe.matl     = as.character(),
+                    insul.level   = as.character())
+            ]
   
-  # source the file
-  source(file = FNFR.fname )
-    
-  # tests on DT_data.3
-  # ==================
+  # extract nom.pipe.diam, pipe.matl, insul.level from file name
+  fnom.pipe.diam <- paste0(str_sub(bfname,1,1),'/',str_sub(bfname,2,2))
+  fpipe.matl <- str_match(bfname, "[1-9]([a-zA-Z]+)(Ba|R[45])")[2]
+  finsul.level <- str_match(bfname, "(PEX|CPVC|RigidCU)(.+)Raw")[3]
+  
+  # build file name of the findNfixTF.R file to source
+  FNFTF.fname.R <- paste0(wd,"/findNfixTF.",bfname,".R")
+STOP  
+  # source the findNfixTF.R file
+  source(file = FNFTF.fname.R )
+
+   
+  # tests DT_data.3 after findNfixTF.R
+  # ==================================
     
   # report if there are any duplicate timestamps
   if( anyDuplicated(DT_data.3[,timestamp]) ) { 
     cat("duplicate timestamps in ", f,"\n") 
     }
 
-  # check attributes of timestamp to :
+  # timestamp, check attributes
   # make sure it's POSIXct 
   atimestamp <- attributes(DT_data.3[,timestamp]) 
   if(atimestamp$class[1] != "POSIXct") {
@@ -91,9 +101,14 @@ for(f in l_Rdata) {
   # report if the number of START and END TestFlags don't match
   if(DT_SE_TestFlags[TestFlag=="START",n]!=DT_SE_TestFlags[TestFlag=="END",n]) {
     cat("different number of STARTs and ENDs in ", f, "\n") 
-    }
+  }
   
   
+  
+  
+  
+  
+    
   # This is the end of the QA testing
   # Now build comments
   

@@ -10,8 +10,8 @@
 # nSTART.END.TestFlags(DT_data.3)
 
 # missing an END between 2009-11-13 08:38:11 and 2009-11-13 09:15:03
-before.tc <- force_tz(ymd_hms("2009-11-13 08:38:11"), tzone = "America/Los_Angeles")
-after.tc  <- force_tz(ymd_hms("2009-11-13 09:15:03"), tzone = "America/Los_Angeles")
+# before.tc <- force_tz(ymd_hms("2009-11-13 08:38:11"), tzone = "America/Los_Angeles")
+# after.tc  <- force_tz(ymd_hms("2009-11-13 09:15:03"), tzone = "America/Los_Angeles")
 
 # # look at the timestamp, record and TestFlag in question
 # View(
@@ -51,14 +51,15 @@ DT_data.3[grepl("[a-z]",TestFlag), TestFlag := NA]
 
 DT_data.3[TestFlag == 'UNIFORM TEMP.',TestFlag := 'UNIFORM TEMP' ]
 DT_data.3[record == 805617 & TestFlag == '.' ,TestFlag := 'TEST 8' ]
-DT_data.3[record == 806200 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ]
+DT_data.3[record == 806200 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ] # confirm these really are COOL DOWN
 DT_data.3[record == 808390 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ]
-
 
 
 # parse comments into separate fields
 # ===================================
+
 # edge {START|END}
+# ----------------
 DT_data.3[grepl("START",TestFlag), list(timestamp, record, TestFlag)]
 DT_data.3[grepl("START",TestFlag), edge:='START']
 DT_data.3[grepl("END",TestFlag), list(timestamp, record, TestFlag)]
@@ -66,23 +67,44 @@ DT_data.3[grepl("END",TestFlag), edge:='END']
 DT_data.3[grepl("(END)|(START)",TestFlag), list(timestamp, record, TestFlag, edge)]
 
 # nominal pipe diameter
-# from bfname
-fnom.pipe.diam <- paste0(str_sub(bfname,1,1),'/',str_sub(bfname,2,2))
-# from TestFlag
-DT_data.3[grepl("[1-9]/[1-9]",TestFlag), 
+# --------------------
+DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
           list(timestamp, record, TestFlag)]
 DT_data.3[grepl("[1-9]/[1-9]",TestFlag), 
           pipe.nom.diam := str_extract(TestFlag, "[1-9]/[1-9]")
           ]
-DT_data.3[grepl("[1-9]/[1-9]",TestFlag), 
+DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
           list(timestamp, record, TestFlag, pipe.nom.diam)]
 DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)), by=pipe.nom.diam]
 
+# pipe material, {PEX|CPVC|RigidCU}
+# -------------
+DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag), 
+          list(n=length(record)), by=TestFlag]
+DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag) & is.na(pipe.matl), 
+          pipe.matl := str_match(TestFlag, "(PEX|CPVC|RigidCU)")[2]]
+DT_data.3[, list(n=length(record)), by=pipe.matl]
 
-# some typos?
-2:              COOL DOWN    20
-3: MAKE PIPE UNIFORM TEMP     2
-4:     MAKE TEMPS UNIFORM    30
-5:             COOLD DOWN     3
+# insulation level
+# -------------
+DT_data.3[!is.na(TestFlag), list(n=length(record)), by=TestFlag]
+DT_data.3[grepl("BARE|R52|R47|R55",TestFlag), 
+          list(n=length(record)), by=TestFlag]
+DT_data.3[grepl("BARE|R52|R47|R55",TestFlag) & is.na(insul.level), 
+          insul.level := str_match(TestFlag, "(BARE|R52|R47|R55)")[2]]
+DT_data.3[!is.na(pipe.matl), list(n=length(record)), by=pipe.matl]
 
 
+
+
+
+
+
+
+# # some typos?
+# 2:              COOL DOWN    20
+# 3: MAKE PIPE UNIFORM TEMP     2
+# 4:     MAKE TEMPS UNIFORM    30
+# 5:             COOLD DOWN     3
+# 
+# 
