@@ -105,7 +105,13 @@ STOP
     cat("different number of STARTs and ENDs in ", f, "\n") 
   }
   
-  
+  # tests to build
+  # edge {START|END}
+  # pipe.nom.diam == fnom.pipe.diam
+  # pipe.matl == fpipe.matl
+  # insul.level == finsul.level
+  # cold.warm == {COLD|WARM}
+  # test.num == "TEST [1-9][0-9]*"
   
   
   
