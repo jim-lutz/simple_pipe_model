@@ -101,7 +101,67 @@ DT_data.3[grepl("COLD|WARM",TestFlag) & is.na(cold.warm),
           cold.warm := str_match(TestFlag, "(COLD|WARM)")[2]]
 DT_data.3[, list(n=length(record)), by=cold.warm]
 
-# test number
+
+# check if record is in order
+DT_data.3[, record.diff := shift(record, fill = 0, type = "lag")-record]
+if (nrow(DT_data.3[record.diff>=0]) > 0) {
+  cat("a 'record' not in sequential order in ", f,"\n") 
+} else {DT_data.3[,record.diff:=NULL]}
+
+names(DT_data.3)
+str(DT_data.3)
+
+# sort DT_data.3 by record
+setkey(DT_data.3, record)
+
+# sequential numbering of START by start.num, segment is temporary variable
+DT_data.3[grepl("START",TestFlag), start.num := seq_along(TestFlag)]
+DT_data.3[, segment := cumsum(!is.na(start.num))]
+DT_data.3[, start.num := start.num[1], by = "segment"]
+DT_data.3[, segment := NULL]
+
+# reverse sort DT_data.3
+setorder(DT_data.3, -record)
+
+# sequential numbering of END by end.num, segment is temporary variable
+DT_data.3[grepl("END",TestFlag), end.num := seq_along(TestFlag)]
+DT_data.3[, segment := cumsum(!is.na(end.num))]
+DT_data.3[, end.num := end.num[1], by = "segment"]
+DT_data.3[, segment := NULL]
+
+# reset sort DT_data.3
+setorder(DT_data.3, record)
+
+# set the test.segment 
+# note this is not the same as test.num because 'TEST NN' can be duplicated
+# get the max & mins
+m <- DT_data.3[, list(max.start.num = max(start.num, na.rm = TRUE),
+                      min.end.num   = min(end.num, na.rm = TRUE))]
+
+# number test.segments with the start.num inclusive of END
+DT_data.3[(start.num + end.num)==(m$max.start.num+m$min.end.num),
+          test.segment := start.num]
+
+# look at results
+DT_data.3[,list(n=length(record)
+                ), by=c("start.num","test.segment")]
+# seems OK, test?
+
+
+# extract just the 'TEST nn'
+DT_TEST_nn <- unique(DT_data.3[grepl("TEST ",TestFlag), list(TestFlag, test.segment)])
+setkey(DT_TEST_nn, test.segment)
+str(DT_TEST_nn)
+
+# now merge it onto DT_data.3
+str(DT_data.3)
+setkey(DT_data.3,record)
+merge(DT_data.3[],DT_TEST_nn[], by=test.segment)
+
+
+
+
+# set start.num
 DT_data.3[grepl("TEST",TestFlag), 
           list(n=length(record)), by=TestFlag]
 DT_data.3[grepl("TEST",TestFlag) & is.na(test.num), 
@@ -119,11 +179,6 @@ DT_data.3[grepl("TEST 1$", TestFlag),
 
 # set flag when between START and END
 names(DT_data.3)
-# sequential numbering by STARTs, segment is temporary variable
-DT_data.3[grepl("START",TestFlag), start.num := seq_along(TestFlag)]
-DT_data.3[, segment := cumsum(!is.na(start.num))]
-DT_data.3[, start.num := start.num[1], by = "segment"]
-DT_data.3[, segment := NULL]
 
 # sequential numbering by ENDs, segment is temporary variable
 DT_data.3[grepl("END",TestFlag), end.num := seq_along(TestFlag)]
