@@ -117,7 +117,7 @@ setkey(DT_data.3, record)
 # sequential numbering of START by start.num, segment is temporary variable
 DT_data.3[grepl("START",TestFlag), start.num := seq_along(TestFlag)]
 DT_data.3[, segment := cumsum(!is.na(start.num))]
-DT_data.3[, start.num := start.num[1], by = "segment"]
+DT_data.3[, start.num := start.num[1], by = "segment"] # fill start.num throughout segment
 DT_data.3[, segment := NULL]
 
 # reverse sort DT_data.3
@@ -126,10 +126,9 @@ setorder(DT_data.3, -record)
 # sequential numbering of END by end.num, segment is temporary variable
 DT_data.3[grepl("END",TestFlag), end.num := seq_along(TestFlag)]
 DT_data.3[, segment := cumsum(!is.na(end.num))]
-DT_data.3[, end.num := end.num[1], by = "segment"]
-DT_data.3[, segment := NULL]
+DT_data.3[, end.num := end.num[1], by = "segment"] # fill end.num throughout segment 
 
-# reset sort DT_data.3
+# reset sort order of DT_data.3
 setorder(DT_data.3, record)
 
 # set the test.segment 
@@ -181,7 +180,7 @@ DT_data.4[!is.na(test.segment),
                nrec      = length(record),
                utest.num = unique(test.num),
                unom.GPM  = unique(nominal.GPM)
-               ), by=test.segment]
+               ), by=test.segment][order(unom.GPM)]
 
 
 # # some typos?

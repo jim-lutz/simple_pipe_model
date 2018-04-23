@@ -152,9 +152,23 @@
     don't forget to check '.' to 'COOL DOWN'
     
     test.edge only single record
-    nom.pipe.diam, pipe.matl, insul.level are for entire dataset
+    nom.pipe.diam, pipe.matl, insul.level are for entire spreadsheet
     cold.warm is for ?, starting conditions? chart this to see
     test.num between edge==START and edge==END inclusive
     
     still have to deal with other.comments
+    
+2018-04-23
+    cold.warm is for starting condition. varies by test.num and test.segment, add to test.segment
+    outside of test.segments, there's sometimes a MAKE TEMPS UNIFORM and a COOL DOWN
+    those are probably to calculate UA and thermal mass 
+    UA calculated from last few records before a COOL DOWN, or maybe the last few records of a test
+    check papers.
+    thermal mass calculated from COOL DOWN. flow turned off at COOL DOWN.
+    maybe make some cooldown.segments as well?
+    
+    probably should make a charting function to see what's going on graphically
+    
+    need to clean up findNfixTF.12PEXBareRawData2.R as well.
+    
     
