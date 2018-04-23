@@ -153,7 +153,7 @@
     
     test.edge only single record
     nom.pipe.diam, pipe.matl, insul.level are for entire dataset
-    cold.warm is for ?
+    cold.warm is for ?, starting conditions? chart this to see
     test.num between edge==START and edge==END inclusive
     
     still have to deal with other.comments

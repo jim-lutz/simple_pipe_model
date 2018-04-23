@@ -108,8 +108,38 @@ DT_data.3[grepl("TEST",TestFlag) & is.na(test.num),
           test.num := TestFlag]
 DT_data.3[, list(n=length(record)), by=test.num]
 
+# fill in test.num between START and END
+View(DT_data.3)
+DT_data.3[grepl("TEST 1|START|END", TestFlag), 
+          list(timestamp, record, TestFlag, edge, test.num )]
+(str(DT_data.3))
+
+DT_data.3[grepl("TEST 1$", TestFlag), 
+          list(timestamp, record, nominal.GPM, test.type, TestFlag, edge, test.num )]
+
+# set flag when between START and END
+names(DT_data.3)
+# sequential numbering by STARTs, segment is temporary variable
+DT_data.3[grepl("START",TestFlag), start.num := seq_along(TestFlag)]
+DT_data.3[, segment := cumsum(!is.na(start.num))]
+DT_data.3[, start.num := start.num[1], by = "segment"]
+DT_data.3[, segment := NULL]
+
+# sequential numbering by ENDs, segment is temporary variable
+DT_data.3[grepl("END",TestFlag), end.num := seq_along(TestFlag)]
+DT_data.3[, segment := cumsum(!is.na(end.num))]
+DT_data.3[, end.num := end.num[1], by = "segment"]
+DT_data.3[, segment := NULL]
 
 
+DT_data.3[grepl("TEST 1$", TestFlag), 
+          list(timestamp, record, edge, test.num, start.num, end.num )]
+
+DT_data.3[start.num==end.num, 
+          list(timestamp, record, edge, test.num, start.num, end.num )]
+
+
+DT_data.3[grepl("START",TestFlag),list(TestFlag,start.num,segment)]
 
 # # some typos?
 # 2:              COOL DOWN    20

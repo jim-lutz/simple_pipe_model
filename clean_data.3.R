@@ -106,11 +106,11 @@ STOP
   }
   
   # tests to build
-  # edge {START|END}
   # pipe.nom.diam == fnom.pipe.diam
   # pipe.matl == fpipe.matl
   # insul.level == finsul.level
   # cold.warm == {COLD|WARM}
+  # edge {START|END}
   # test.num == "TEST [1-9][0-9]*"
   
   
