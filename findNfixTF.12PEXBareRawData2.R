@@ -55,7 +55,7 @@ DT_data.3[record == 806200 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ] # confir
 DT_data.3[record == 808390 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ]
 
 
-# parse comments into separate fields
+# parse TestFlag into separate fields
 # ===================================
 
 # edge {START|END}
@@ -145,56 +145,44 @@ DT_data.3[(start.num + end.num)==(m$max.start.num+m$min.end.num),
 # look at results
 DT_data.3[,list(n=length(record)
                 ), by=c("start.num","test.segment")]
-# seems OK, test?
-
+# seems OK, test this?
 
 # extract just the 'TEST nn'
 DT_TEST_nn <- unique(DT_data.3[grepl("TEST ",TestFlag), list(TestFlag, test.segment)])
 setkey(DT_TEST_nn, test.segment)
 str(DT_TEST_nn)
 
-# now merge it onto DT_data.3
+# now merge DT_TEST_nn onto DT_data.3
 str(DT_data.3)
 setkey(DT_data.3,record)
-merge(DT_data.3[],DT_TEST_nn[], by=test.segment)
+DT_data.4 <- merge(DT_data.3[],DT_TEST_nn[], by="test.segment", all.x = TRUE)
 
+# clean up
+names(DT_data.4)
 
+# clean up variables
+DT_data.4[, `:=` (test.num   = TestFlag.y,
+                  start.num  = NULL,
+                  end.num    = NULL,
+                  TestFlag.y = NULL)
+          ]
+setnames(DT_data.4, 
+         old = c("TestFlag.x" ),
+         new = c("TestFlag" )
+)
+         
+# compare number test.segments
+DT_data.4[, list(nrec = length(record)), by=test.segment]
+DT_data.4[, list(nrec = length(record)), by=test.segment][order(-nrec)]
 
+DT_data.4[!is.na(test.segment), 
+          list(min.ts    = min(timestamp), 
+               min.rec   = min(record),
+               nrec      = length(record),
+               utest.num = unique(test.num),
+               unom.GPM  = unique(nominal.GPM)
+               ), by=test.segment]
 
-# set start.num
-DT_data.3[grepl("TEST",TestFlag), 
-          list(n=length(record)), by=TestFlag]
-DT_data.3[grepl("TEST",TestFlag) & is.na(test.num), 
-          test.num := TestFlag]
-DT_data.3[, list(n=length(record)), by=test.num]
-
-# fill in test.num between START and END
-View(DT_data.3)
-DT_data.3[grepl("TEST 1|START|END", TestFlag), 
-          list(timestamp, record, TestFlag, edge, test.num )]
-(str(DT_data.3))
-
-DT_data.3[grepl("TEST 1$", TestFlag), 
-          list(timestamp, record, nominal.GPM, test.type, TestFlag, edge, test.num )]
-
-# set flag when between START and END
-names(DT_data.3)
-
-# sequential numbering by ENDs, segment is temporary variable
-DT_data.3[grepl("END",TestFlag), end.num := seq_along(TestFlag)]
-DT_data.3[, segment := cumsum(!is.na(end.num))]
-DT_data.3[, end.num := end.num[1], by = "segment"]
-DT_data.3[, segment := NULL]
-
-
-DT_data.3[grepl("TEST 1$", TestFlag), 
-          list(timestamp, record, edge, test.num, start.num, end.num )]
-
-DT_data.3[start.num==end.num, 
-          list(timestamp, record, edge, test.num, start.num, end.num )]
-
-
-DT_data.3[grepl("START",TestFlag),list(TestFlag,start.num,segment)]
 
 # # some typos?
 # 2:              COOL DOWN    20
