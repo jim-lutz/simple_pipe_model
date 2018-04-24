@@ -58,13 +58,13 @@ DT_data.3[record == 808390 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ]
 # parse TestFlag into separate fields
 # ===================================
 
-# edge {START|END}
-# ----------------
-DT_data.3[grepl("START",TestFlag), list(timestamp, record, TestFlag)]
-DT_data.3[grepl("START",TestFlag), edge:='START']
-DT_data.3[grepl("END",TestFlag), list(timestamp, record, TestFlag)]
-DT_data.3[grepl("END",TestFlag), edge:='END']
-DT_data.3[grepl("(END)|(START)",TestFlag), list(timestamp, record, TestFlag, edge)]
+# # edge {START|END}
+# # ----------------
+# DT_data.3[grepl("START",TestFlag), list(timestamp, record, TestFlag)]
+# DT_data.3[grepl("START",TestFlag), edge:='START']
+# DT_data.3[grepl("END",TestFlag), list(timestamp, record, TestFlag)]
+# DT_data.3[grepl("END",TestFlag), edge:='END']
+# DT_data.3[grepl("(END)|(START)",TestFlag), list(timestamp, record, TestFlag, edge)]
 
 # nominal pipe diameter
 # --------------------
@@ -76,6 +76,9 @@ DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
 DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
           list(timestamp, record, TestFlag, pipe.nom.diam)]
 DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)), by=pipe.nom.diam]
+
+p.nom.dm <- unique(DT_data.3[!is.na(pipe.nom.diam), list(pipe.nom.diam)])
+
 
 # pipe material, {PEX|CPVC|RigidCU}
 # -------------

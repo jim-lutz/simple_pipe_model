@@ -171,4 +171,8 @@
     
     need to clean up findNfixTF.12PEXBareRawData2.R as well.
     
+2018-04-24
+    check test.type in DT_data.3, may not match data
     
+    can get rid of edge
+        
