@@ -76,7 +76,19 @@ DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
 DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
           list(timestamp, record, TestFlag, pipe.nom.diam)]
 DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)), by=pipe.nom.diam]
-# put test here that there's only 1 nominal diameter
+
+# get the number of pipe.nom.diam
+n.pipe.nom.diam <- nrow(DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)), by=pipe.nom.diam])
+
+# test that there's only 1 nominal diameter
+if(n.pipe.nom.diam>1) {
+  cat("more than one nominal diameter in ", f,"\n") 
+  STOP
+} else { if(n.pipe.nom.diam<1) {
+  cat("no nominal diameter in ", f,"\n") 
+  STOP
+}
+  }
 
 # get the pipe.nom.diam
 p.nom.dm <- unique(DT_data.3[!is.na(pipe.nom.diam), list(pipe.nom.diam)])$pipe.nom.diam
@@ -86,14 +98,25 @@ DT_data.3[, pipe.nom.diam := p.nom.dm]
 
 
 # pipe material, {PEX|CPVC|RigidCU}
-# -------------
+# ---------------------------------
 DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag), 
           list(n=length(record)), by=TestFlag]
 DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag) & is.na(pipe.matl), 
           pipe.matl := str_match(TestFlag, "(PEX|CPVC|RigidCU)")[2]]
 DT_data.3[, list(n=length(record)), by=pipe.matl]
 
-# put test here that there's only 1 pipe material
+# get the number of pipe.matl
+n.pipe.matl <- nrow(DT_data.3[!is.na(pipe.matl), list(n=length(record)), by=pipe.matl])
+
+# test that there's only 1 pipe material
+if(n.pipe.matl>1) {
+  cat("more than one pipe material in ", f,"\n") 
+  stop()
+} else { if(n.pipe.matl<1) {
+  cat("no pipe material in ", f,"\n") 
+  stop()
+}
+}
 
 # get the pipe.matl
 p.mtl <- unique(DT_data.3[!is.na(pipe.matl), list(pipe.matl)])$pipe.matl
@@ -109,7 +132,18 @@ DT_data.3[grepl("BARE|R52|R47|R55",TestFlag) & is.na(insul.level),
           insul.level := str_match(TestFlag, "(BARE|R52|R47|R55)")[2]]
 DT_data.3[, list(n=length(record)), by=insul.level]
 
-# put test here that there's only 1 insulation level
+# get the number of insulation levels
+n.insul.level <- nrow(DT_data.3[!is.na(insul.level), list(n=length(record)), by=insul.level])
+
+# test that there's only 1 insulation level
+if(n.insul.level>1) {
+  cat("more than one insulation level in ", f,"\n") 
+  stop()
+} else { if(n.insul.level<1) {
+  cat("no insulation level in ", f,"\n") 
+  stop()
+}
+}
 
 # get the insulation level
 ins.lvl <- unique(DT_data.3[!is.na(insul.level), list(insul.level)])$insul.level
