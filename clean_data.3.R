@@ -63,17 +63,17 @@ STOP
   source(file = FNFTF.fname.R )
 
    
-  # tests DT_data.3 after findNfixTF.R
+  # tests DT_data.4 after findNfixTF.R
   # ==================================
     
   # report if there are any duplicate timestamps
-  if( anyDuplicated(DT_data.3[,timestamp]) ) { 
+  if( anyDuplicated(DT_data.4[,timestamp]) ) { 
     cat("duplicate timestamps in ", f,"\n") 
     }
 
   # timestamp, check attributes
   # make sure it's POSIXct 
-  atimestamp <- attributes(DT_data.3[,timestamp]) 
+  atimestamp <- attributes(DT_data.4[,timestamp]) 
   if(atimestamp$class[1] != "POSIXct") {
     cat("a timestamp in ", f," is not POSIXct","\n") 
   }
@@ -84,7 +84,7 @@ STOP
   
   # do start and end timestamps match those in DT_test_info spreadsheet
   timestamp.data <- 
-    DT_data.3[, list(start = min(timestamp),end = max(timestamp))]
+    DT_data.4[, list(start = min(timestamp),end = max(timestamp))]
 
   timestamp.info <- # need to force the spreadsheet times to America/Los_Angeles
     DT_test_info[fname==paste0(bfname, ".xlsx"), 
@@ -97,12 +97,12 @@ STOP
   
   # get the START and END TestFlags 
   DT_SE_TestFlags <-
-    DT_data.3[TestFlag=="START" | TestFlag=="END",  list(timestamp,TestFlag), 
+    DT_data.4[TestFlag=="START" | TestFlag=="END",  list(timestamp,TestFlag), 
               by=TestFlag][ ,list(n=length(timestamp)), by=TestFlag]
   
   # report if the number of START and END TestFlags don't match
   if(DT_SE_TestFlags[TestFlag=="START",n]!=DT_SE_TestFlags[TestFlag=="END",n]) {
-    cat("different number of STARTs and ENDs in ", f, "\n") 
+    stop("different number of STARTs and ENDs in ", f, "\n") 
   }
   
   # tests to build
@@ -110,7 +110,6 @@ STOP
   # pipe.matl == fpipe.matl
   # insul.level == finsul.level
   # cold.warm == {COLD|WARM}
-  # edge {START|END}
   # test.num == "TEST [1-9][0-9]*"
   
   
@@ -122,11 +121,11 @@ STOP
   
   # collect comments for 5 records before and after every START and END
   # build lead & lag columns
-  DT_lag_comments <- DT_data.3[,shift(TestFlag,n = 5:1, type = "lag", give.names = TRUE)]
-  DT_lead_comments <- DT_data.3[,shift(TestFlag,n = 1:5, type = "lead", give.names = TRUE)]
+  DT_lag_comments <- DT_data.4[,shift(TestFlag,n = 5:1, type = "lag", give.names = TRUE)]
+  DT_lead_comments <- DT_data.4[,shift(TestFlag,n = 1:5, type = "lead", give.names = TRUE)]
  
   # combine the lead & lag columns into DT_table 
-  DT_comments <- data.table(DT_data.3,DT_lag_comments,DT_lead_comments)
+  DT_comments <- data.table(DT_data.4,DT_lag_comments,DT_lead_comments)
   
   # list of lead/lag_comment column names
   lead_lag_cols <- c(
