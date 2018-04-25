@@ -76,8 +76,13 @@ DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
 DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
           list(timestamp, record, TestFlag, pipe.nom.diam)]
 DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)), by=pipe.nom.diam]
+# put test here that there's only 1 nominal diameter
 
-p.nom.dm <- unique(DT_data.3[!is.na(pipe.nom.diam), list(pipe.nom.diam)])
+# get the pipe.nom.diam
+p.nom.dm <- unique(DT_data.3[!is.na(pipe.nom.diam), list(pipe.nom.diam)])$pipe.nom.diam
+
+# fill in all the nominal diameters
+DT_data.3[, pipe.nom.diam := p.nom.dm]
 
 
 # pipe material, {PEX|CPVC|RigidCU}
@@ -88,6 +93,14 @@ DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag) & is.na(pipe.matl),
           pipe.matl := str_match(TestFlag, "(PEX|CPVC|RigidCU)")[2]]
 DT_data.3[, list(n=length(record)), by=pipe.matl]
 
+# put test here that there's only 1 pipe material
+
+# get the pipe.matl
+p.mtl <- unique(DT_data.3[!is.na(pipe.matl), list(pipe.matl)])$pipe.matl
+
+# fill in all the pipe.matl
+DT_data.3[, pipe.matl := p.mtl]
+
 # insulation level
 # -------------
 DT_data.3[grepl("BARE|R52|R47|R55",TestFlag), 
@@ -95,6 +108,14 @@ DT_data.3[grepl("BARE|R52|R47|R55",TestFlag),
 DT_data.3[grepl("BARE|R52|R47|R55",TestFlag) & is.na(insul.level), 
           insul.level := str_match(TestFlag, "(BARE|R52|R47|R55)")[2]]
 DT_data.3[, list(n=length(record)), by=insul.level]
+
+# put test here that there's only 1 insulation level
+
+# get the insulation level
+ins.lvl <- unique(DT_data.3[!is.na(insul.level), list(insul.level)])$insul.level
+
+# fill in all the pipe.matl
+DT_data.3[, insul.level := ins.lvl]
 
 # COLD WARM
 # -------------
