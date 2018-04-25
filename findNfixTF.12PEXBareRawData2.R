@@ -158,17 +158,18 @@ DT_data.3[grepl("COLD|WARM",TestFlag),
 DT_data.3[grepl("COLD|WARM",TestFlag) & is.na(cold.warm), 
           cold.warm := str_match(TestFlag, "(COLD|WARM)")[2]]
 DT_data.3[, list(n=length(record)), by=cold.warm]
-
+# see if this matches with temperatures at start of tests
 
 # check if record is in order
 DT_data.3[, record.diff := shift(record, fill = 0, type = "lag")-record]
 if (nrow(DT_data.3[record.diff>=0]) > 0) {
-  cat("a 'record' not in sequential order in ", f,"\n") 
+  stop("a 'record' not in sequential order in ", f,"\n") 
 } else {DT_data.3[,record.diff:=NULL]}
 
 names(DT_data.3)
 str(DT_data.3)
 
+# identify records included in a test
 # sort DT_data.3 by record
 setkey(DT_data.3, record)
 
@@ -204,7 +205,7 @@ DT_data.3[,list(n=length(record)
                 ), by=c("start.num","test.segment")]
 # seems OK, test this?
 
-# extract just the 'TEST nn'
+# extract test.segment for each 'TEST nn'
 DT_TEST_nn <- unique(DT_data.3[grepl("TEST ",TestFlag), list(TestFlag, test.segment)])
 setkey(DT_TEST_nn, test.segment)
 str(DT_TEST_nn)
