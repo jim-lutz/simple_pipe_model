@@ -115,12 +115,21 @@ DT_plot[1:21,list(timestamp, TC2)]
 time.zero <- force_tz(ymd_hms("2009-11-17 06:15:19"), tzone = "America/Los_Angeles")
 
 # minutes since time.zero
-DT_plot[, mins.zero := difftime(timestamp, time.zero, units = "mins")]
+DT_plot[, mins.zero := as.numeric(difftime(timestamp, time.zero, units = "mins"))]
 
 
-# 3-dimension, 1 TC
-p <- plot_ly(data = DT_plot, x = ~mins.zero, y = ~TC14_gal, z= ~TC14,
-             type = "scatter3d", mode= "lines") 
-p
+# 3-dimension, multiple TC traces
+p <- plot_ly(data = DT_plot, x = ~TC5_gal, y = ~mins.zero, z = ~TC5, 
+             type = "scatter3d", mode= "lines") %>%
+    add_trace( x = ~TC14_gal, y = ~mins.zero, z= ~TC14 ) %>%
+    layout(scene = list(xaxis = list(title = 'distance from start of pipe (gal)',
+                                     range = c(0,1.25)
+                                     ),
+                        yaxis = list(title = 'time from start of draw (min)',
+                                     range = c(0,10)
+                                     ),
+                        zaxis = list(title = 'temp (deg F)')))
+p  
 
-
+str(DT_plot$mins.zero)
+DT_plot[,list(TC2_gal)]
