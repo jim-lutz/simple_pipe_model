@@ -7,6 +7,9 @@
 .Rhistory
 nohistory
 
+# temporary work files
+.RData
+
 # RStudio files
 .Rproj.user/
 

@@ -1,9 +1,53 @@
 # findNfixTF.12PEXBareRawData2.R 
 # this is code find and fix anomalies in TestFlag in DT_data.3 for 12PEXBareRawData2
 # it is sourced by clean_data.3.R
-# DT_data.3 should then pass all the subsequent tests in clean_data.3.R
+# DT_data.4 should then pass all the subsequent tests in clean_data.3.R
 
-# find and fix the missing END timestamp
+# report if there are any duplicate timestamps
+if( anyDuplicated(DT_data.3[,timestamp]) ) { 
+  stop("duplicate timestamps in ", f,"\n") 
+}
+
+# timestamp, check attributes
+# make sure it's POSIXct 
+atimestamp <- attributes(DT_data.3[,timestamp]) 
+if(atimestamp$class[1] != "POSIXct") {
+  stop("a timestamp in ", f," is not POSIXct","\n") 
+}
+# make sure it's the right time zone
+if(atimestamp$tzone!="America/Los_Angeles") {
+  stop("a time zone in ", f," is not America/Los_Angeles","\n") 
+}
+
+# do start and end timestamps match those in DT_test_info spreadsheet
+timestamp.data <- 
+  DT_data.3[, list(start = min(timestamp),end = max(timestamp))]
+
+timestamp.info <- # need to force the spreadsheet times to America/Los_Angeles
+  DT_test_info[fname==paste0(bfname, ".xlsx"), 
+               list(start = force_tz(start.ct, tzone = "America/Los_Angeles"), 
+                    end = force_tz(end.ct, tzone = "America/Los_Angeles")
+               )]
+if( !identical(timestamp.data$start,timestamp.info$start) ) {
+  stop("start and end times in ", f, " and DT_test_info do not match","\n") 
+}
+
+# change '.' at record 808382 TestFlag to be END
+DT_data.3[record==808382, TestFlag:='END']
+# this is a typo found by the following tests
+
+# get the START and END TestFlags 
+DT_SE_TestFlags <-
+  DT_data.3[TestFlag=="START" | TestFlag=="END",  list(timestamp,TestFlag), 
+            by=TestFlag][ ,list(n=length(timestamp)), by=TestFlag]
+
+# report if the number of START and END TestFlags don't match
+if(DT_SE_TestFlags[TestFlag=="START",n]!=DT_SE_TestFlags[TestFlag=="END",n]) {
+  nSTART.END.TestFlags(DT_data.3)
+  stop("different number of STARTs and ENDs in ", f, "\n") 
+}
+
+# find the missing END timestamp
 # ======================================
 
 # look at the START and END timestamps
@@ -19,7 +63,7 @@
 #            list(timestamp, record, TestFlag)]
 # )
 
-# at record 808382 TestFlag should be END
+# '.' at record 808382 TestFlag should be END
 DT_data.3[record==808382, TestFlag:='END']
 
 # # look at the timestamp, record and TestFlag in question
@@ -39,20 +83,19 @@ DT_data.3[record==808382, TestFlag:='END']
 DT_data.3[grepl("[a-z]",TestFlag), TestFlag := NA]
 
 
-
 # find and fix TestFlag with . 
 # =============================
-# DT_data.3[grepl("\\.",TestFlag), list(timestamp, record, TestFlag)]
-#              timestamp record      TestFlag
-# 1: 2009-11-13 04:36:19 799754 UNIFORM TEMP.  <- just remove the .
-# 2: 2009-11-13 06:53:41 805617             .  <- should be 'TEST 8'
-# 3: 2009-11-13 07:03:24 806200             .  <- may be 'COOL DOWN'? but only to 84F?
-# 4: 2009-11-13 08:53:04 808390             .  <- may be 'COOL DOWN'? but only to 93.2	109.8
-
 DT_data.3[TestFlag == 'UNIFORM TEMP.',TestFlag := 'UNIFORM TEMP' ]
 DT_data.3[record == 805617 & TestFlag == '.' ,TestFlag := 'TEST 8' ]
 DT_data.3[record == 806200 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ] # confirm these really are COOL DOWN
 DT_data.3[record == 808390 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ]
+
+# report if TestFlag contains '.'
+if(nrow(DT_data.3[grepl("\\.",TestFlag), list(timestamp, record, TestFlag)])>0) {
+  View(DT_data.3[grepl("\\.",TestFlag), list(timestamp, record, TestFlag)])
+  cat("TestFlag with . in ", f, "\n") 
+  stop("look them up in ", bfname, "\n")
+}
 
 
 # parse TestFlag into separate fields
@@ -65,6 +108,7 @@ DT_data.3[record == 808390 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ]
 # DT_data.3[grepl("END",TestFlag), list(timestamp, record, TestFlag)]
 # DT_data.3[grepl("END",TestFlag), edge:='END']
 # DT_data.3[grepl("(END)|(START)",TestFlag), list(timestamp, record, TestFlag, edge)]
+
 
 # nominal pipe diameter
 # --------------------
@@ -82,16 +126,19 @@ n.pipe.nom.diam <- nrow(DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)),
 
 # test that there's only 1 nominal diameter
 if(n.pipe.nom.diam>1) {
-  cat("more than one nominal diameter in ", f,"\n") 
-  STOP
-} else { if(n.pipe.nom.diam<1) {
-  cat("no nominal diameter in ", f,"\n") 
-  STOP
-}
+  stop("more than one nominal diameter in ", f,"\n") 
+  } else { if(n.pipe.nom.diam<1) {
+    stop("no nominal diameter in ", f,"\n") 
+    }
   }
 
 # get the pipe.nom.diam
 p.nom.dm <- unique(DT_data.3[!is.na(pipe.nom.diam), list(pipe.nom.diam)])$pipe.nom.diam
+
+# check that pipe.nom.diam from TestFlag matches fnom.pipe.diam from filename
+if(p.nom.dm != fnom.pipe.diam) {
+  stop("pipe.nom.diam does not match fnom.pipe.diam in ", f,"\n")
+}
 
 # fill in all the nominal diameters
 DT_data.3[, pipe.nom.diam := p.nom.dm]
@@ -110,19 +157,23 @@ n.pipe.matl <- nrow(DT_data.3[!is.na(pipe.matl), list(n=length(record)), by=pipe
 
 # test that there's only 1 pipe material
 if(n.pipe.matl>1) {
-  cat("more than one pipe material in ", f,"\n") 
-  stop()
+  stop("more than one pipe material in ", f,"\n") 
 } else { if(n.pipe.matl<1) {
-  cat("no pipe material in ", f,"\n") 
-  stop()
-}
+  stop("no pipe material in ", f,"\n") 
+  }
 }
 
 # get the pipe.matl
 p.mtl <- unique(DT_data.3[!is.na(pipe.matl), list(pipe.matl)])$pipe.matl
 
+# check that pipe.matl from TestFlag matches fpipe.matl from filename
+if(p.mtl != fpipe.matl) {
+  stop("pipe.matl does not match fpipe.matl in ", f,"\n")
+}
+
 # fill in all the pipe.matl
 DT_data.3[, pipe.matl := p.mtl]
+
 
 # insulation level
 # -------------
@@ -137,28 +188,35 @@ n.insul.level <- nrow(DT_data.3[!is.na(insul.level), list(n=length(record)), by=
 
 # test that there's only 1 insulation level
 if(n.insul.level>1) {
-  cat("more than one insulation level in ", f,"\n") 
-  stop()
+  stop("more than one insulation level in ", f,"\n") 
 } else { if(n.insul.level<1) {
-  cat("no insulation level in ", f,"\n") 
-  stop()
-}
+  stop("no insulation level in ", f,"\n") 
+  }
 }
 
 # get the insulation level
 ins.lvl <- unique(DT_data.3[!is.na(insul.level), list(insul.level)])$insul.level
 
+# check that insul.level from TestFlag matches finsul.level from filename
+if(ins.lvl != toupper(finsul.level)) {
+  stop("insul.level does not match finsul.level in ", f,"\n")
+}
+
 # fill in all the pipe.matl
 DT_data.3[, insul.level := ins.lvl]
 
+
 # COLD WARM
 # -------------
+DT_data.3[,cold.warm := NA]
 DT_data.3[grepl("COLD|WARM",TestFlag), 
           list(n=length(record)), by=TestFlag]
-DT_data.3[grepl("COLD|WARM",TestFlag) & is.na(cold.warm), 
-          cold.warm := str_match(TestFlag, "(COLD|WARM)")[2]]
-DT_data.3[, list(n=length(record)), by=cold.warm]
+DT_data.3[is.na(cold.warm) & grepl("COLD|WARM",TestFlag), 
+          cold.warm := TestFlag ]
+          # cold.warm := str_match_all(TestFlag, "(WARM|COLD)")[2]]
+DT_data.3[grepl("COLD|WARM",TestFlag), list(n=length(record)), by=c("cold.warm", "TestFlag")]
 # see if this matches with temperatures at start of tests
+
 
 # check if record is in order
 DT_data.3[, record.diff := shift(record, fill = 0, type = "lag")-record]
@@ -166,10 +224,13 @@ if (nrow(DT_data.3[record.diff>=0]) > 0) {
   stop("a 'record' not in sequential order in ", f,"\n") 
 } else {DT_data.3[,record.diff:=NULL]}
 
+
+
 names(DT_data.3)
 str(DT_data.3)
 
 # identify records included in a test
+#====================================
 # sort DT_data.3 by record
 setkey(DT_data.3, record)
 
@@ -240,6 +301,18 @@ DT_data.4[!is.na(test.segment),
                utest.num = unique(test.num),
                unom.GPM  = unique(nominal.GPM)
                ), by=test.segment][order(unom.GPM)]
+
+
+# tests to build
+# pipe.nom.diam == fnom.pipe.diam
+# pipe.matl == fpipe.matl
+# insul.level == finsul.level
+# cold.warm == {COLD|WARM}
+# test.num == "TEST [1-9][0-9]*"
+
+
+
+
 
 
 # # some typos?

@@ -176,3 +176,6 @@
     
     can get rid of edge
         
+2018-04-25
+    after finding anomalies in findNfixTF, put the fix before the test
+    that way it'll pass the test when rerun.        
