@@ -66,50 +66,7 @@ STOP
   # tests DT_data.4 after findNfixTF.R
   # ==================================
     
-  # report if there are any duplicate timestamps
-  if( anyDuplicated(DT_data.4[,timestamp]) ) { 
-    cat("duplicate timestamps in ", f,"\n") 
-    }
-
-  # timestamp, check attributes
-  # make sure it's POSIXct 
-  atimestamp <- attributes(DT_data.4[,timestamp]) 
-  if(atimestamp$class[1] != "POSIXct") {
-    cat("a timestamp in ", f," is not POSIXct","\n") 
-  }
-  # make sure it's the right time zone
-  if(atimestamp$tzone!="America/Los_Angeles") {
-    cat("a time zone in ", f," is not America/Los_Angeles","\n") 
-  }
-  
-  # do start and end timestamps match those in DT_test_info spreadsheet
-  timestamp.data <- 
-    DT_data.4[, list(start = min(timestamp),end = max(timestamp))]
-
-  timestamp.info <- # need to force the spreadsheet times to America/Los_Angeles
-    DT_test_info[fname==paste0(bfname, ".xlsx"), 
-                 list(start = force_tz(start.ct, tzone = "America/Los_Angeles"), 
-                      end = force_tz(end.ct, tzone = "America/Los_Angeles")
-                 )]
-  if( !identical(timestamp.data$start,timestamp.info$start) ) {
-    cat("start and end times in ", f, " and DT_test_info do not match","\n") 
-  }
-  
-  # get the START and END TestFlags 
-  DT_SE_TestFlags <-
-    DT_data.4[TestFlag=="START" | TestFlag=="END",  list(timestamp,TestFlag), 
-              by=TestFlag][ ,list(n=length(timestamp)), by=TestFlag]
-  
-  # report if the number of START and END TestFlags don't match
-  if(DT_SE_TestFlags[TestFlag=="START",n]!=DT_SE_TestFlags[TestFlag=="END",n]) {
-    stop("different number of STARTs and ENDs in ", f, "\n") 
-  }
-  
   # tests to build
-  # pipe.nom.diam == fnom.pipe.diam
-  # pipe.matl == fpipe.matl
-  # insul.level == finsul.level
-  # cold.warm == {COLD|WARM}
   # test.num == "TEST [1-9][0-9]*"
   
   

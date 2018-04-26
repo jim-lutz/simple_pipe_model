@@ -4,11 +4,13 @@
 # DT_data.4 should then pass all the subsequent tests in clean_data.3.R
 
 # report if there are any duplicate timestamps
+# ===
 if( anyDuplicated(DT_data.3[,timestamp]) ) { 
   stop("duplicate timestamps in ", f,"\n") 
 }
 
-# timestamp, check attributes
+# check timestamp attributes
+# ===
 # make sure it's POSIXct 
 atimestamp <- attributes(DT_data.3[,timestamp]) 
 if(atimestamp$class[1] != "POSIXct") {
@@ -19,7 +21,17 @@ if(atimestamp$tzone!="America/Los_Angeles") {
   stop("a time zone in ", f," is not America/Los_Angeles","\n") 
 }
 
+
+# check if record is in order
+# ===
+DT_data.3[, record.diff := shift(record, fill = 0, type = "lag")-record]
+if (nrow(DT_data.3[record.diff>=0]) > 0) {
+  stop("a 'record' not in sequential order in ", f,"\n") 
+} else {DT_data.3[,record.diff:=NULL]}
+
+
 # do start and end timestamps match those in DT_test_info spreadsheet
+# ===
 timestamp.data <- 
   DT_data.3[, list(start = min(timestamp),end = max(timestamp))]
 
@@ -32,10 +44,17 @@ if( !identical(timestamp.data$start,timestamp.info$start) ) {
   stop("start and end times in ", f, " and DT_test_info do not match","\n") 
 }
 
+
+# START and END TestFlags
+# ===
+
+# fix
+# ---
 # change '.' at record 808382 TestFlag to be END
 DT_data.3[record==808382, TestFlag:='END']
-# this is a typo found by the following tests
+# this was a typo originally found by the following tests
 
+# find
 # get the START and END TestFlags 
 DT_SE_TestFlags <-
   DT_data.3[TestFlag=="START" | TestFlag=="END",  list(timestamp,TestFlag), 
@@ -47,12 +66,6 @@ if(DT_SE_TestFlags[TestFlag=="START",n]!=DT_SE_TestFlags[TestFlag=="END",n]) {
   stop("different number of STARTs and ENDs in ", f, "\n") 
 }
 
-# find the missing END timestamp
-# ======================================
-
-# look at the START and END timestamps
-# nSTART.END.TestFlags(DT_data.3)
-
 # missing an END between 2009-11-13 08:38:11 and 2009-11-13 09:15:03
 # before.tc <- force_tz(ymd_hms("2009-11-13 08:38:11"), tzone = "America/Los_Angeles")
 # after.tc  <- force_tz(ymd_hms("2009-11-13 09:15:03"), tzone = "America/Los_Angeles")
@@ -63,55 +76,47 @@ if(DT_SE_TestFlags[TestFlag=="START",n]!=DT_SE_TestFlags[TestFlag=="END",n]) {
 #            list(timestamp, record, TestFlag)]
 # )
 
-# '.' at record 808382 TestFlag should be END
-DT_data.3[record==808382, TestFlag:='END']
 
-# # look at the timestamp, record and TestFlag in question
-# View(
-#   DT_data.3[ before.tc < timestamp & timestamp < after.tc & !is.na(TestFlag), 
-#              list(timestamp, record, TestFlag)]
-# )
+# TestFlag with lowercase letters
+# ===
 
-# look at the START and END timestamps
-# nSTART.END.TestFlags(DT_data.3)
-
-
-# find and remove TestFlag with lowercase letters
-# ===============================================
-# DT_data.3[grepl("[a-z]",TestFlag), list(timestamp, record, TestFlag)]
-
+# fix
+# ---
 DT_data.3[grepl("[a-z]",TestFlag), TestFlag := NA]
 
+# find
+# ---
+if(nrow(DT_data.3[grepl("[a-z]",TestFlag), list(timestamp, record, TestFlag)])>0){
+  View(DT_data.3[grepl("[a-z]",TestFlag), list(timestamp, record, TestFlag)])
+  stop("TestFlag with lowercase letters in ", f, "\n") 
+}
 
-# find and fix TestFlag with . 
-# =============================
+
+# TestFlag with . 
+# ===
+
+# fix
+# ---
 DT_data.3[TestFlag == 'UNIFORM TEMP.',TestFlag := 'UNIFORM TEMP' ]
 DT_data.3[record == 805617 & TestFlag == '.' ,TestFlag := 'TEST 8' ]
-DT_data.3[record == 806200 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ] # confirm these really are COOL DOWN
-DT_data.3[record == 808390 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ]
+DT_data.3[record == 806200 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ] # zero flow after this
+DT_data.3[record == 808390 & TestFlag == '.' ,TestFlag := 'COOL DOWN' ] # zero flow after this
 
+# find
+# ---
 # report if TestFlag contains '.'
 if(nrow(DT_data.3[grepl("\\.",TestFlag), list(timestamp, record, TestFlag)])>0) {
   View(DT_data.3[grepl("\\.",TestFlag), list(timestamp, record, TestFlag)])
   cat("TestFlag with . in ", f, "\n") 
-  stop("look them up in ", bfname, "\n")
+  stop("look them up in ", bfname, ".xlsx\n")
 }
 
 
 # parse TestFlag into separate fields
-# ===================================
-
-# # edge {START|END}
-# # ----------------
-# DT_data.3[grepl("START",TestFlag), list(timestamp, record, TestFlag)]
-# DT_data.3[grepl("START",TestFlag), edge:='START']
-# DT_data.3[grepl("END",TestFlag), list(timestamp, record, TestFlag)]
-# DT_data.3[grepl("END",TestFlag), edge:='END']
-# DT_data.3[grepl("(END)|(START)",TestFlag), list(timestamp, record, TestFlag, edge)]
-
+# ===
 
 # nominal pipe diameter
-# --------------------
+# ===
 DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
           list(timestamp, record, TestFlag)]
 DT_data.3[grepl("[1-9]/[1-9]",TestFlag), 
@@ -145,7 +150,7 @@ DT_data.3[, pipe.nom.diam := p.nom.dm]
 
 
 # pipe material, {PEX|CPVC|RigidCU}
-# ---------------------------------
+# ===
 DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag), 
           list(n=length(record)), by=TestFlag]
 DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag) & is.na(pipe.matl), 
@@ -176,7 +181,7 @@ DT_data.3[, pipe.matl := p.mtl]
 
 
 # insulation level
-# -------------
+# ===
 DT_data.3[grepl("BARE|R52|R47|R55",TestFlag), 
           list(n=length(record)), by=TestFlag]
 DT_data.3[grepl("BARE|R52|R47|R55",TestFlag) & is.na(insul.level), 
@@ -207,31 +212,34 @@ DT_data.3[, insul.level := ins.lvl]
 
 
 # COLD WARM
-# -------------
+# ===
 DT_data.3[,cold.warm := NA]
 DT_data.3[grepl("COLD|WARM",TestFlag), 
           list(n=length(record)), by=TestFlag]
 DT_data.3[is.na(cold.warm) & grepl("COLD|WARM",TestFlag), 
           cold.warm := TestFlag ]
-          # cold.warm := str_match_all(TestFlag, "(WARM|COLD)")[2]]
-DT_data.3[grepl("COLD|WARM",TestFlag), list(n=length(record)), by=c("cold.warm", "TestFlag")]
-# see if this matches with temperatures at start of tests
 
+# find
+# ---
+# see if this matches with temperatures at start of tests from nominal
+# if(nrow(
+#   DT_data.3[grepl("COLD|WARM",TestFlag), list(n=length(record)),
+#           by=c("cold.warm", "TestFlag", "test.type")])!=2) {
+#   View(
+#     DT_data.3[grepl("COLD|WARM",TestFlag), 
+#                  list(timestamp, record),
+#               by=c("test.type","TestFlag")]
+#     )
+# }
+# some of the test segments in a COLD START test.type start with the pipes
+# still warm from the previous test.
+# remove test.type it's not needed
+DT_data.3[, test.type := NULL]
 
-# check if record is in order
-DT_data.3[, record.diff := shift(record, fill = 0, type = "lag")-record]
-if (nrow(DT_data.3[record.diff>=0]) > 0) {
-  stop("a 'record' not in sequential order in ", f,"\n") 
-} else {DT_data.3[,record.diff:=NULL]}
-
-
-
-names(DT_data.3)
-str(DT_data.3)
 
 # identify the records included in a test.segment
-# where a test.segment is between START and END inclusive
-#================================================
+# where a test.segment is between TestFlag == START and END inclusive
+#===
 
 # sort DT_data.3 by record
 setkey(DT_data.3, record)
@@ -249,6 +257,7 @@ setorder(DT_data.3, -record)
 DT_data.3[grepl("END",TestFlag), end.num := seq_along(TestFlag)]
 DT_data.3[, segment := cumsum(!is.na(end.num))]
 DT_data.3[, end.num := end.num[1], by = "segment"] # fill end.num throughout segment 
+DT_data.3[, segment := NULL]
 
 # reset sort order of DT_data.3
 setorder(DT_data.3, record)
@@ -268,12 +277,28 @@ DT_data.3[,list(n=length(record)
                 ), by=c("start.num","test.segment")]
 # seems OK, test this?
 
-# extract test.segment for each 'TEST nn'
+
+# check TEST nn problems
+if( nrow(
+  DT_data.3[grepl("TEST ",TestFlag)!=grepl("TEST [1-9][0-9]*",TestFlag), list(TestFlag)]
+  )
+) {
+  View(
+    DT_data.3[grepl("TEST ",TestFlag)!=grepl("TEST [1-9][0-9]*",TestFlag), 
+              list(timestamp, record, TestFlag)]
+    )
+  stop("problem with 'TEST nn' in ", f,"\n")
+  }
+
+
+# assign 'TEST nn' to each test.segment
+# ===
+# get the 'TEST nn' for each test.segment
 DT_TEST_nn <- unique(DT_data.3[grepl("TEST ",TestFlag), list(TestFlag, test.segment)])
 setkey(DT_TEST_nn, test.segment)
 str(DT_TEST_nn)
 
-# now merge DT_TEST_nn onto DT_data.3
+# now merge DT_TEST_nn onto DT_data.3 as test.num for each test.segment
 str(DT_data.3)
 setkey(DT_data.3,record)
 DT_data.4 <- merge(DT_data.3[],DT_TEST_nn[], by="test.segment", all.x = TRUE)
@@ -294,7 +319,7 @@ setnames(DT_data.4,
 
 
 # cold.warm 
-# ---------
+# ===
 # each test.segment should have a matched pair of cold.warm
 n.c.w <-
   DT_data.4[cold.warm %in% c("WARM","COLD"), list(nrec=length(record)),
@@ -303,12 +328,8 @@ if( !all( n.c.w==rep(2,length(n.c.w)) ) ) {
   stop("number of COLD or WARM per test segment != 2 in ", f,"\n") 
 }
 
-DT_data.4[!is.na(cold.warm), list(u.c.w = unique(cold.warm)),by=test.segment ]
 
-
-
-
-DT_data.4[cold.warm %in% c("WARM","COLD"),
+DT_data.4[cold.warm %in% c("WARM","COLD") & !is.na(test.num),
          list( timestamp,
                record, test.segment, test.num,
                cold.warm) ]
@@ -325,11 +346,6 @@ DT_data.4[!is.na(test.segment),
                unom.GPM  = unique(nominal.GPM),
                unom.cw   = unique(cold.warm)
                ), by=test.segment][order(unom.GPM,unom.cw)]
-
-
-# tests to build
-# test.num == "TEST [1-9][0-9]*"
-
 
 
 
