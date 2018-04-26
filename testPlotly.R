@@ -61,7 +61,7 @@ DT_plot <-
                  TC1, TC2, TC3, TC4, TC5, TC6, TC13, TC14
             )
             ]
-# start at 6:15
+# start at 6:10
 
 before.ts <- force_tz(ymd_hms("2009-11-17 06:10:00"), tzone = "America/Los_Angeles")
 after.ts  <- force_tz(ymd_hms("2009-11-17 06:25:00"), tzone = "America/Los_Angeles")
@@ -75,8 +75,8 @@ DT_plot <-
 
 
 # 1-dimension
-p <- plot_ly(data = DT_plot, x = ~TC14, type = "box")
-p
+# p <- plot_ly(data = DT_plot, x = ~TC14, type = "box")
+# p
 
 # 2-dimension, 1 TC
 p <- plot_ly(data = DT_plot, x = ~timestamp, y = ~TC14, 
@@ -89,3 +89,38 @@ p <- plot_ly(data = DT_plot, x = ~timestamp, y= ~TC2,
     add_trace( y = ~TC5) %>%
     add_trace( y = ~TC14) 
 p
+
+# add distance in gallons to the DT_plot
+View(DT_test_info)
+
+# build the filename
+xlsx.fname <- str_replace(f,".Rdata",".xlsx")
+
+# get the variable name TCnn_gal 
+grep("_gal",names(DT_test_info),value = TRUE)
+
+# get the values for TCnn_gal for that filename
+DT_gal <-
+DT_test_info[fname==xlsx.fname, 
+           list(TC1_gal, TC2_gal, TC3_gal, TC4_gal, 
+                TC5_gal, TC6_gal, TC13_gal, TC14_gal)]
+
+# add TCnn_gal to DT_plot
+DT_plot <- data.table( DT_plot, DT_gal)
+
+# convert timestamp to minutes from start
+DT_plot[1:21,list(timestamp, TC2)]
+
+# set time.zero 2009-11-17 06:15:19, record just before TC2 starts to rise
+time.zero <- force_tz(ymd_hms("2009-11-17 06:15:19"), tzone = "America/Los_Angeles")
+
+# minutes since time.zero
+DT_plot[, mins.zero := difftime(timestamp, time.zero, units = "mins")]
+
+
+# 3-dimension, 1 TC
+p <- plot_ly(data = DT_plot, x = ~mins.zero, y = ~TC14_gal, z= ~TC14,
+             type = "scatter3d", mode= "lines") 
+p
+
+
