@@ -229,8 +229,10 @@ if (nrow(DT_data.3[record.diff>=0]) > 0) {
 names(DT_data.3)
 str(DT_data.3)
 
-# identify records included in a test
-#====================================
+# identify the records included in a test.segment
+# where a test.segment is between START and END inclusive
+#================================================
+
 # sort DT_data.3 by record
 setkey(DT_data.3, record)
 
@@ -252,7 +254,7 @@ DT_data.3[, end.num := end.num[1], by = "segment"] # fill end.num throughout seg
 setorder(DT_data.3, record)
 
 # set the test.segment 
-# note this is not the same as test.num because 'TEST NN' can be duplicated
+# note this is not the same as test.num because 'TEST NN' is sometimes duplicate
 # get the max & mins
 m <- DT_data.3[, list(max.start.num = max(start.num, na.rm = TRUE),
                       min.end.num   = min(end.num, na.rm = TRUE))]
@@ -289,25 +291,43 @@ setnames(DT_data.4,
          old = c("TestFlag.x" ),
          new = c("TestFlag" )
 )
+
+
+# cold.warm 
+# ---------
+# each test.segment should have a matched pair of cold.warm
+n.c.w <-
+  DT_data.4[cold.warm %in% c("WARM","COLD"), list(nrec=length(record)),
+            by=c("test.segment","cold.warm")]$nrec
+if( !all( n.c.w==rep(2,length(n.c.w)) ) ) {
+  stop("number of COLD or WARM per test segment != 2 in ", f,"\n") 
+}
+
+DT_data.4[!is.na(cold.warm), list(u.c.w = unique(cold.warm)),by=test.segment ]
+
+
+
+
+DT_data.4[cold.warm %in% c("WARM","COLD"),
+         list( timestamp,
+               record, test.segment, test.num,
+               cold.warm) ]
          
 # compare number test.segments
-DT_data.4[, list(nrec = length(record)), by=test.segment]
-DT_data.4[, list(nrec = length(record)), by=test.segment][order(-nrec)]
+DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")]
+DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")][order(-nrec)]
 
 DT_data.4[!is.na(test.segment), 
-          list(min.ts    = min(timestamp), 
-               min.rec   = min(record),
+          list(start.ts  = min(timestamp), 
+               start.rec = min(record),
                nrec      = length(record),
                utest.num = unique(test.num),
-               unom.GPM  = unique(nominal.GPM)
-               ), by=test.segment][order(unom.GPM)]
+               unom.GPM  = unique(nominal.GPM),
+               unom.cw   = unique(cold.warm)
+               ), by=test.segment][order(unom.GPM,unom.cw)]
 
 
 # tests to build
-# pipe.nom.diam == fnom.pipe.diam
-# pipe.matl == fpipe.matl
-# insul.level == finsul.level
-# cold.warm == {COLD|WARM}
 # test.num == "TEST [1-9][0-9]*"
 
 

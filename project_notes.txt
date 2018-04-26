@@ -177,5 +177,10 @@
     can get rid of edge
         
 2018-04-25
+    change of strategy for findNfixTF
     after finding anomalies in findNfixTF, put the fix before the test
-    that way it'll pass the test when rerun.        
+    that way it'll pass the test when rerunning findNfixTF.        
+    
+    still need to apply cold.warm across entire test.segment
+    
+    
