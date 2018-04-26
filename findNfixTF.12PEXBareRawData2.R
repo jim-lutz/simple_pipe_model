@@ -348,13 +348,13 @@ DT_data.4[!is.na(test.segment),
                ), by=test.segment][order(unom.GPM,unom.cw)]
 
 
+# find other.comments
+DT_data.4[!is.na(TestFlag) & 
+          !grepl("PEX|CPVC|RigidCU",TestFlag) & # not a pipe material
+          !grepl("BARE|R52|R47|R55",TestFlag) & # not an insulation level
+          !grepl("TEST [1-9][0-9]*",TestFlag) & # not a TEST nn              
+          !grepl("COLD|WARM",TestFlag) &        # not COLD|WARM 
+          !grepl("START|END",TestFlag) &        # not START|END
+          !grepl("AIR|IN-AIR",TestFlag),        # not AIR|IN-AIR
+          other.comment := TestFlag]
 
-
-
-# # some typos?
-# 2:              COOL DOWN    20
-# 3: MAKE PIPE UNIFORM TEMP     2
-# 4:     MAKE TEMPS UNIFORM    30
-# 5:             COOLD DOWN     3
-# 
-# 
