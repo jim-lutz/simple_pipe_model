@@ -20,7 +20,7 @@ if(atimestamp$class[1] != "POSIXct") {
 if(atimestamp$tzone!="America/Los_Angeles") {
   stop("a time zone in ", f," is not America/Los_Angeles","\n") 
 }
-
+rm(atimestamp)
 
 # check if record is in order
 # ===
@@ -43,6 +43,7 @@ timestamp.info <- # need to force the spreadsheet times to America/Los_Angeles
 if( !identical(timestamp.data$start,timestamp.info$start) ) {
   stop("start and end times in ", f, " and DT_test_info do not match","\n") 
 }
+rm(timestamp.data, timestamp.info)
 
 
 # START and END TestFlags
@@ -65,6 +66,7 @@ if(DT_SE_TestFlags[TestFlag=="START",n]!=DT_SE_TestFlags[TestFlag=="END",n]) {
   nSTART.END.TestFlags(DT_data.3)
   stop("different number of STARTs and ENDs in ", f, "\n") 
 }
+rm(DT_SE_TestFlags)
 
 # missing an END between 2009-11-13 08:38:11 and 2009-11-13 09:15:03
 # before.tc <- force_tz(ymd_hms("2009-11-13 08:38:11"), tzone = "America/Los_Angeles")
@@ -136,6 +138,7 @@ if(n.pipe.nom.diam>1) {
     stop("no nominal diameter in ", f,"\n") 
     }
   }
+rm(n.pipe.nom.diam)
 
 # get the pipe.nom.diam
 p.nom.dm <- unique(DT_data.3[!is.na(pipe.nom.diam), list(pipe.nom.diam)])$pipe.nom.diam
@@ -147,6 +150,7 @@ if(p.nom.dm != fnom.pipe.diam) {
 
 # fill in all the nominal diameters
 DT_data.3[, pipe.nom.diam := p.nom.dm]
+rm(p.nom.dm)
 
 
 # pipe material, {PEX|CPVC|RigidCU}
@@ -167,6 +171,7 @@ if(n.pipe.matl>1) {
   stop("no pipe material in ", f,"\n") 
   }
 }
+rm(n.pipe.matl)
 
 # get the pipe.matl
 p.mtl <- unique(DT_data.3[!is.na(pipe.matl), list(pipe.matl)])$pipe.matl
@@ -178,6 +183,7 @@ if(p.mtl != fpipe.matl) {
 
 # fill in all the pipe.matl
 DT_data.3[, pipe.matl := p.mtl]
+rm(p.mtl)
 
 
 # insulation level
@@ -198,6 +204,7 @@ if(n.insul.level>1) {
   stop("no insulation level in ", f,"\n") 
   }
 }
+rm(n.insul.level)
 
 # get the insulation level
 ins.lvl <- unique(DT_data.3[!is.na(insul.level), list(insul.level)])$insul.level
@@ -209,6 +216,7 @@ if(ins.lvl != toupper(finsul.level)) {
 
 # fill in all the pipe.matl
 DT_data.3[, insul.level := ins.lvl]
+rm(ins.lvl)
 
 
 # COLD WARM
@@ -271,6 +279,7 @@ m <- DT_data.3[, list(max.start.num = max(start.num, na.rm = TRUE),
 # number test.segments with the start.num inclusive of END
 DT_data.3[(start.num + end.num)==(m$max.start.num+m$min.end.num),
           test.segment := start.num]
+rm(m)
 
 # look at results
 DT_data.3[,list(n=length(record)
@@ -302,6 +311,7 @@ str(DT_TEST_nn)
 str(DT_data.3)
 setkey(DT_data.3,record)
 DT_data.4 <- merge(DT_data.3[],DT_TEST_nn[], by="test.segment", all.x = TRUE)
+rm(DT_TEST_nn)
 
 # clean up
 names(DT_data.4)
@@ -327,7 +337,7 @@ n.c.w <-
 if( !all( n.c.w==rep(2,length(n.c.w)) ) ) {
   stop("number of COLD or WARM per test segment != 2 in ", f,"\n") 
 }
-
+rm(n.c.w)
 
 DT_data.4[cold.warm %in% c("WARM","COLD") & !is.na(test.num),
          list( timestamp,

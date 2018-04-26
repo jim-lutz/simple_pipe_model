@@ -64,7 +64,8 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # save DT_data.4 as .Rdata
   save(DT_data.4, file = paste0(wd_data,"4/", f))
   
-  
+  # remove data.tables before next spreadsheet
+  rm(DT_data.3, DT_data.4)
 
 # }  loop turned off
   

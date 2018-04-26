@@ -183,4 +183,7 @@
     
     still need to apply cold.warm across entire test.segment
     
+2018-04-26
+    ready to try plotly on 12PEXBareRawData2, I think
+    
     

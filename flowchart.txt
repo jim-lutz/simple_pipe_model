@@ -28,7 +28,9 @@ clean_data.2.R
 clean_data.3.R
     # script to identify Carl's test segments in ./data/3/*.Rdata files    
     input:  ./data/DT_test_info.Rdata
-            ./data/3/*.Rdata 
-    output: 
-not finished yet               
+            ./data/3/*.Rdata
+            findNfixTF.*.R  
+                only 12PEXBareRawData2 so far
+    output: ./data/4/*.Rdata
+             
             
