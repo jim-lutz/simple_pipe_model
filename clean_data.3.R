@@ -43,12 +43,11 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # look at DT_data.3  
   DT_data.3
 
-  # add empty columns to DT_data.3
+  # add empty columns to DT_data.3, used for debugging
   DT_data.3[, `:=` (pipe.matl     = as.character(),
-                    insul.level   = as.character(),
-                    cold.warm     = as.character(),
-                    test.num      = as.character())
-            ]
+                   insul.level   = as.character(),
+                   cold.warm     = as.character())
+           ]
   
   # extract nom.pipe.diam, pipe.matl, insul.level from file name
   fnom.pipe.diam <- paste0(str_sub(bfname,1,1),'/',str_sub(bfname,2,2))
@@ -57,11 +56,15 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   
   # build file name of the findNfixTF.R file to source
   FNFTF.fname.R <- paste0(wd,"/findNfixTF.",bfname,".R")
-STOP  
+
+  # STOP  
   # source the findNfixTF.R file
   source(file = FNFTF.fname.R )
+  
+  # save DT_data.4 as .Rdata
+  save(DT_data.4, file = paste0(wd_data,"4/", f))
+  
+  
 
-   
-
-}  
+# }  loop turned off
   
