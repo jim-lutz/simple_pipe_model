@@ -56,7 +56,7 @@ DT_plot <-
 # start at 6:10
 
 before.ts <- force_tz(ymd_hms("2009-11-17 06:10:00"), tzone = "America/Los_Angeles")
-after.ts  <- force_tz(ymd_hms("2009-11-17 06:25:00"), tzone = "America/Los_Angeles")
+after.ts  <- force_tz(ymd_hms("2009-11-17 06:22:00"), tzone = "America/Los_Angeles")
 
 DT_plot <-
   DT_data.4[before.ts <= timestamp & timestamp <= after.ts, 
@@ -82,8 +82,7 @@ DT_plot <-
 #     add_trace( y = ~TC14) 
 # p
 
-# add distance in gallons to the DT_plot
-View(DT_test_info)
+# View(DT_test_info)
 
 # build the filename
 xlsx.fname <- str_replace(f,".Rdata",".xlsx")
@@ -110,30 +109,31 @@ DT_plot[, mins.zero := as.numeric(difftime(timestamp, time.zero, units = "mins")
 
 
 # 3-dimension, multiple TC traces
-p <- plot_ly(data = DT_plot,  
+p <- plot_ly(data = DT_plot,
              x = ~TC1_gal,  y = ~mins.zero, z = ~TC1,  name = 'TC1',
              type = "scatter3d", mode= "lines") %>%
+  add_trace( x = ~TC2_gal,  y = ~mins.zero, z = ~TC2,  name = 'TC2' ) %>%
+  add_trace( x = ~TC3_gal,  y = ~mins.zero, z = ~TC3,  name = 'TC3' ) %>%
+  add_trace( x = ~TC4_gal,  y = ~mins.zero, z = ~TC4,  name = 'TC4' ) %>%
   add_trace( x = ~TC5_gal,  y = ~mins.zero, z = ~TC5,  name = 'TC5' ) %>%
+  add_trace( x = ~TC6_gal,  y = ~mins.zero, z = ~TC6,  name = 'TC6' ) %>%
+  add_trace( x = ~TC13_gal, y = ~mins.zero, z = ~TC13, name = 'TC13' ) %>%
   add_trace( x = ~TC14_gal, y = ~mins.zero, z = ~TC14, name = 'TC14' ) %>%
-  layout(scene = list(xaxis = list(title = 'distance from start of pipe (gal)',
+  layout(title = "1/2 PEX, BARE, 1 GPM", 
+         scene = list(xaxis = list(title = 'distance from start of pipe (gal)',
                                    range = c(0,1.25)),
                       yaxis = list(title = 'time from start of draw (min)',
-                                   range = c(0,10.0)),
+                                   range = c(0,6.0)),
                       zaxis = list(title = 'temp (deg F)',
                                    range = c(50,140)),
                       camera = list( up = list(x = 0, y = 0, z = 1),
-                                     # eye = list(x = 1.25, y = -1.25, z = 1.25)) 
-                                     # pretty good, try less negative y
-                                     # eye = list(x = 1.25, y = -.75, z = 1.25)) 
-                                     # not bad, try less z
-                                     # eye = list(x = 1.25, y = -.75, z = .75)) 
-                                     # orientation good, but too close
-                                     # eye = list(x = 1.25*3, y = -.75*3, z = .75*3)) 
-                                     # that worked, but it's too far
-                                     eye = list(x = 1.25*1.5, y = -.75*1.5, z = .75*1.5)) 
-  )
+                                     eye = list(x = 1.25*1.5, y = -.75*1.5, z = .75*1.5))
+                      )
          )
 p  
+
+plotly_POST(p, filename = "1/2 PEX, BARE, 1 GPM")
+
 rm(p)
 
 str(DT_plot$mins.zero)

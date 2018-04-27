@@ -186,4 +186,19 @@
 2018-04-26
     ready to try plotly on 12PEXBareRawData2, I think
     
-    
+    Warning messages:
+1: 'plotly_POST' is deprecated.
+Use 'api_create' instead.
+See help("Deprecated")
+2: You need a plotly username. See help(signup, package = 'plotly')
+3: Couldn't find username
+4: You need an api_key. See help(signup, package = 'plotly')
+5: Couldn't find api_key
+6: You need a plotly username. See help(signup, package = 'plotly')
+7: Couldn't find username
+8: You need an api_key. See help(signup, package = 'plotly')
+9: Couldn't find api_key
+10: You need a plotly username. See help(signup, package = 'plotly')
+11: Couldn't find username
+12: You need an api_key. See help(signup, package = 'plotly')
+13: Couldn't find api_key
