@@ -34,14 +34,6 @@ DT_data.4
 if(!require(plotly)){install.packages("plotly")}
 library(plotly)
 
-# test
-p <- plot_ly(midwest, x = ~percollege, color = ~state, type = "box")
-p
-str(p)
-
-packageVersion('plotly')
-# [1] ‘4.7.1’
-
 # figure out what to plot
 names(DT_data.4)
 DT_data.4[!is.na(test.segment) & nominal.GPM==1, 
@@ -79,16 +71,16 @@ DT_plot <-
 # p
 
 # 2-dimension, 1 TC
-p <- plot_ly(data = DT_plot, x = ~timestamp, y = ~TC14, 
-             type = "scatter", mode =  "lines" )
-p
+# p <- plot_ly(data = DT_plot, x = ~timestamp, y = ~TC14, 
+#              type = "scatter", mode =  "lines" )
+# p
 
 # 2-dimension, 3 TC traces
-p <- plot_ly(data = DT_plot, x = ~timestamp, y= ~TC2,
-             type = "scatter", mode =  "lines" ) %>%
-    add_trace( y = ~TC5) %>%
-    add_trace( y = ~TC14) 
-p
+# p <- plot_ly(data = DT_plot, x = ~timestamp, y= ~TC2,
+#              type = "scatter", mode =  "lines" ) %>%
+#     add_trace( y = ~TC5) %>%
+#     add_trace( y = ~TC14) 
+# p
 
 # add distance in gallons to the DT_plot
 View(DT_test_info)
@@ -110,7 +102,6 @@ DT_plot <- data.table( DT_plot, DT_gal)
 
 # convert timestamp to minutes from start
 DT_plot[1:21,list(timestamp, TC2)]
-
 # set time.zero 2009-11-17 06:15:19, record just before TC2 starts to rise
 time.zero <- force_tz(ymd_hms("2009-11-17 06:15:19"), tzone = "America/Los_Angeles")
 
@@ -128,10 +119,22 @@ p <- plot_ly(data = DT_plot,
                                    range = c(0,1.25)),
                       yaxis = list(title = 'time from start of draw (min)',
                                    range = c(0,10.0)),
-                      zaxis = list(title = 'temp (deg F)')
-                      )
+                      zaxis = list(title = 'temp (deg F)',
+                                   range = c(50,140)),
+                      camera = list( up = list(x = 0, y = 0, z = 1),
+                                     # eye = list(x = 1.25, y = -1.25, z = 1.25)) 
+                                     # pretty good, try less negative y
+                                     # eye = list(x = 1.25, y = -.75, z = 1.25)) 
+                                     # not bad, try less z
+                                     # eye = list(x = 1.25, y = -.75, z = .75)) 
+                                     # orientation good, but too close
+                                     # eye = list(x = 1.25*3, y = -.75*3, z = .75*3)) 
+                                     # that worked, but it's too far
+                                     eye = list(x = 1.25*1.5, y = -.75*1.5, z = .75*1.5)) 
+  )
          )
 p  
+rm(p)
 
 str(DT_plot$mins.zero)
 DT_plot[,list(TC5_gal, mins.zero, TC5)]
