@@ -23,16 +23,38 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 # this is for testing on just one *.Rdata data.table
 f = l_Rdata[1]
 
-# load in a data.table DT_data.4
+fn.Rdata = f # name of ./data/*.4.Rdata to work with
+
+pipe_gal <- function(fn.Rdata, DT_test_info) {
+  # function to get distance to TCs from start of pipe in gallons
+  # returns a data.table of the distances for that filename
+  
+  # fn.Rdata     is the bare filename to look up data in DT_test_info
+  # DT_test_info is the file with pipe distances for each spreadsheet
+  
+  # build the .xlsx filename
+  xlsx.fname <- str_replace(f,".Rdata",".xlsx")
+  
+  # get the variable names TCnn_gal 
+  TCn_gals <- grep("TC[0-9]+_gal",names(DT_test_info),value = TRUE)
+  
+  unlist(TCn_gals)
+  
+  # get the values for TCnn_gal for that filename from DT_test_info
+  DT_gal <- DT_test_info[fname==xlsx.fname, TCn_gals, with=FALSE]
+
+    
+  
+  
+  
+}
+
+
+# load in the data.table DT_data.4
 load(file = paste0(wd_data_in,f) )
 
 # look at DT_data.4
 DT_data.4
-
-# try plotly
-# https://plot.ly/r/getting-started/#getting-started-with-plotly-for-r
-if(!require(plotly)){install.packages("plotly")}
-library(plotly)
 
 # figure out what to plot
 names(DT_data.4)
@@ -84,17 +106,6 @@ DT_plot <-
 
 # View(DT_test_info)
 
-# build the filename
-xlsx.fname <- str_replace(f,".Rdata",".xlsx")
-
-# get the variable name TCnn_gal 
-grep("_gal",names(DT_test_info),value = TRUE)
-
-# get the values for TCnn_gal for that filename from DT_test_info
-DT_gal <-
-DT_test_info[fname==xlsx.fname, 
-           list(TC1_gal, TC2_gal, TC3_gal, TC4_gal, 
-                TC5_gal, TC6_gal, TC13_gal, TC14_gal)]
 
 # add TCnn_gal to DT_plot
 DT_plot <- data.table( DT_plot, DT_gal)
@@ -132,18 +143,14 @@ p <- plot_ly(data = DT_plot,
          )
 p  
 
-# environment variables for my plotly account.
-Sys.setenv("plotly_username" = "jlutz")
-Sys.setenv("plotly_api_key" = "rBZZhtmAhMwlQShilGI7")
-
-# my plotly user account
-usr <- Sys.getenv("plotly_username", NA)
-if (!is.na(usr)) {
-  # your account info https://api.plot.ly/v2/#users
-  api(sprintf("users/%s", usr))
-  # your folders/files https://api.plot.ly/v2/folders#user
-  api(sprintf("folders/home?user=%s", usr))
-}
+# # my plotly user account
+# usr <- Sys.getenv("plotly_username", NA)
+# if (!is.na(usr)) {
+#   # your account info https://api.plot.ly/v2/#users
+#   api(sprintf("users/%s", usr))
+#   # your folders/files https://api.plot.ly/v2/folders#user
+#   api(sprintf("folders/home?user=%s", usr))
+# }
 
 
 

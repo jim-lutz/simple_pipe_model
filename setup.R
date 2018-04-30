@@ -66,6 +66,15 @@ library(janitor)
 # library(ggplot2)
 # part of tidyverse
 
+# work with plotly
+# https://plot.ly/r/getting-started/#getting-started-with-plotly-for-r
+if(!require(plotly)){install.packages("plotly")}
+library(plotly)
+
+# environment variables for my plotly account.
+Sys.setenv("plotly_username" = "jlutz")
+Sys.setenv("plotly_api_key" = "rBZZhtmAhMwlQShilGI7")
+
 # change the default background for ggplot2 to white, not gray
 theme_set( theme_bw() )
 
