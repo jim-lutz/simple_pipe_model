@@ -214,33 +214,11 @@ if(ins.lvl != toupper(finsul.level)) {
   stop("insul.level does not match finsul.level in ", f,"\n")
 }
 
-# fill in all the pipe.matl
+# fill in all the insul.level
 DT_data.3[, insul.level := ins.lvl]
 rm(ins.lvl)
 
 
-# COLD WARM
-# ===
-DT_data.3[,cold.warm := NA]
-DT_data.3[grepl("COLD|WARM",TestFlag), 
-          list(n=length(record)), by=TestFlag]
-DT_data.3[is.na(cold.warm) & grepl("COLD|WARM",TestFlag), 
-          cold.warm := TestFlag ]
-
-# find
-# ---
-# see if this matches with temperatures at start of tests from nominal
-# if(nrow(
-#   DT_data.3[grepl("COLD|WARM",TestFlag), list(n=length(record)),
-#           by=c("cold.warm", "TestFlag", "test.type")])!=2) {
-#   View(
-#     DT_data.3[grepl("COLD|WARM",TestFlag), 
-#                  list(timestamp, record),
-#               by=c("test.type","TestFlag")]
-#     )
-# }
-# some of the test segments in a COLD START test.type start with the pipes
-# still warm from the previous test.
 # remove test.type it's not needed
 DT_data.3[, test.type := NULL]
 
@@ -327,9 +305,18 @@ setnames(DT_data.4,
          new = c("TestFlag" )
 )
 
+STOP
 
-# cold.warm 
+
+# COLD WARM
 # ===
+# do this by test.segment
+DT_data.4[,cold.warm := NA]
+DT_data.4[grepl("COLD|WARM",TestFlag), 
+          list(n=length(record)), by=TestFlag]
+DT_data.4[is.na(cold.warm) & grepl("COLD|WARM",TestFlag), 
+          cold.warm := TestFlag ]
+
 # each test.segment should have a matched pair of cold.warm
 n.c.w <-
   DT_data.4[cold.warm %in% c("WARM","COLD"), list(nrec=length(record)),
@@ -339,11 +326,22 @@ if( !all( n.c.w==rep(2,length(n.c.w)) ) ) {
 }
 rm(n.c.w)
 
-DT_data.4[cold.warm %in% c("WARM","COLD") & !is.na(test.num),
-         list( timestamp,
-               record, test.segment, test.num,
-               cold.warm) ]
-         
+
+# test there's only 1 cold.warm per test.segment
+# loop through all the test.segments
+for(ts in unique(DT_data.4[!is.na(test.segment),]$test.segment)){
+
+  # get the unique cold.warm for this test.segment
+  c.w <- unique(DT_data.4[test.segment==ts & !is.na(cold.warm), 
+                          list(cold.warm)])$cold.warm
+  
+  # fill in all the cold.warm for this test.segment
+  DT_data.4[test.segment==ts , cold.warm := c.w]
+  rm(c.w)
+
+}
+
+
 # compare number test.segments
 DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")]
 DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")][order(-nrec)]
