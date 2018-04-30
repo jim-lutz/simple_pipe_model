@@ -90,7 +90,7 @@ xlsx.fname <- str_replace(f,".Rdata",".xlsx")
 # get the variable name TCnn_gal 
 grep("_gal",names(DT_test_info),value = TRUE)
 
-# get the values for TCnn_gal for that filename
+# get the values for TCnn_gal for that filename from DT_test_info
 DT_gal <-
 DT_test_info[fname==xlsx.fname, 
            list(TC1_gal, TC2_gal, TC3_gal, TC4_gal, 
@@ -132,7 +132,23 @@ p <- plot_ly(data = DT_plot,
          )
 p  
 
-# plotly_POST(p, filename = "1/2 PEX, BARE, 1 GPM")
+# environment variables for my plotly account.
+Sys.setenv("plotly_username" = "jlutz")
+Sys.setenv("plotly_api_key" = "rBZZhtmAhMwlQShilGI7")
+
+# my plotly user account
+usr <- Sys.getenv("plotly_username", NA)
+if (!is.na(usr)) {
+  # your account info https://api.plot.ly/v2/#users
+  api(sprintf("users/%s", usr))
+  # your folders/files https://api.plot.ly/v2/folders#user
+  api(sprintf("folders/home?user=%s", usr))
+}
+
+
+
+# post the plot
+rplot <- api_create(p, filename = "1_2 PEX BARE 1 GPM")
 
 # rm(p)
 

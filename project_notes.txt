@@ -202,3 +202,14 @@ See help("Deprecated")
 11: Couldn't find username
 12: You need an api_key. See help(signup, package = 'plotly')
 13: Couldn't find api_key
+
+2018-04-30
+    api_key is not password
+    chart well liked, get rest of 1/2barePEX to Gary before Thursday
+    
+    think about curve to fit temp (or delta T)z as function of 
+    distance from start of pipe (gals)x and time from start of draw (y)
+    
+    possible surface chart?
+    
+    automated or semi-automated algorithm to pick test data sets?
