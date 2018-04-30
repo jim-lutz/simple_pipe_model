@@ -26,8 +26,6 @@ f = l_Rdata[1]
 # data.table of distances in gallons along pipe to TCs
 DT_gal <- pipe_gal(fn.Rdata=f, DT=DT_test_info) 
 
-STOP
-
 # load in the data.table DT_data.4
 load(file = paste0(wd_data_in,f) )
 
@@ -36,7 +34,7 @@ DT_data.4
 
 # figure out what to plot
 names(DT_data.4)
-DT_data.4[!is.na(test.segment) & nominal.GPM==1, 
+DT_data.4[!is.na(test.segment), 
           list(start.rec = min(record),
                start.time = min(timestamp),
                nrec      = length(record),
@@ -44,6 +42,22 @@ DT_data.4[!is.na(test.segment) & nominal.GPM==1,
                unom.GPM  = unique(nominal.GPM),
                u.cw      = unique(cold.warm)
           ), by=test.segment][order(unom.GPM,u.cw)]
+
+
+DT_data.4[!is.na(test.segment), 
+          list(nrec = length(record),
+               unom.GPM  = unique(nominal.GPM),
+               utest.num = unique(test.num),
+               u.cw      = unique(cold.warm)
+               ),
+               by=test.segment][
+                 order(unom.GPM, -nrec)
+               ]
+
+
+STOP
+
+
 
 # try test.segment 18
 # for starters x=timestamp, z=TC14
