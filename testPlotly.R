@@ -132,9 +132,77 @@ p <- plot_ly(data = DT_plot,
          )
 p  
 
-plotly_POST(p, filename = "1/2 PEX, BARE, 1 GPM")
+# plotly_POST(p, filename = "1/2 PEX, BARE, 1 GPM")
 
-rm(p)
+# rm(p)
+
+# convert 1 trace per second?
+str(DT_plot)
+
+# convert TCn_gal to numeric
+DT_plot[, `:=` (TC1_gal =  as.numeric(TC1_gal),
+                TC2_gal =  as.numeric(TC2_gal),
+                TC3_gal =  as.numeric(TC3_gal),
+                TC4_gal =  as.numeric(TC4_gal),
+                TC5_gal =  as.numeric(TC5_gal),
+                TC6_gal =  as.numeric(TC6_gal),
+                TC13_gal = as.numeric(TC13_gal),
+                TC14_gal = as.numeric(TC14_gal))
+                ]
+
+# mins.zero to seconds
+DT_plot[, secs.zero := round(mins.zero * 60)]
+
+# remove timestamp and mins.zero
+DT_plot[, `:=` (timestamp = NULL,
+                mins.zero = NULL)
+        ]
+
+# remove first 4 records
+DT_plot <- DT_plot[5:nrow(DT_plot)]
+
+names(DT_plot)
+DT_plot[1:10, list(TC1,TC2,secs.zero)]
+
+# rename TC and TC _gal variables
+setnames(DT_plot, old = c("TC1", "TC2", "TC3", "TC4", "TC5", "TC6", "TC13", "TC14",
+                          "TC1_gal", "TC2_gal", "TC3_gal", "TC4_gal", "TC5_gal", "TC6_gal", "TC13_gal", "TC14_gal",
+                          "secs.zero"),
+         new = c("temp1", "temp2", "temp3", "temp4", "temp5", "temp6", "temp7", "temp8",
+                 "dist1", "dist2", "dist3", "dist4", "dist5", "dist6", "dist7", "dist8",
+                 "secs.zero")
+)
+
+DT_plot[1:10, ]
+str(DT_plot)
+dcast(DT_plot,  ~ ...)
+
+# 3-dimension, multiple pipe traces
+p1 <- plot_ly(data = DT_plot,
+             x = ~mins.zero, y = ~TC1_gal,  z = ~TC1,  name = 'TC1',
+             type = "scatter3d", mode= "lines") %>%
+  add_trace( y = ~TC2_gal,  x = ~mins.zero, z = ~TC2,  name = 'TC2' ) %>%
+  add_trace( y = ~TC3_gal,  x = ~mins.zero, z = ~TC3,  name = 'TC3' ) %>%
+  add_trace( y = ~TC4_gal,  x = ~mins.zero, z = ~TC4,  name = 'TC4' ) %>%
+  add_trace( y = ~TC5_gal,  x = ~mins.zero, z = ~TC5,  name = 'TC5' ) %>%
+  add_trace( y = ~TC6_gal,  x = ~mins.zero, z = ~TC6,  name = 'TC6' ) %>%
+  add_trace( y = ~TC13_gal, x = ~mins.zero, z = ~TC13, name = 'TC13' ) %>%
+  add_trace( y = ~TC14_gal, x = ~mins.zero, z = ~TC14, name = 'TC14' ) %>%
+  layout(title = "1/2 PEX, BARE, 1 GPM", 
+         scene = list(yaxis = list(title = 'distance from start of pipe (gal)',
+                                   range = c(0,1.25)),
+                      xaxis = list(title = 'time from start of draw (min)',
+                                   range = c(0,6.0)),
+                      zaxis = list(title = 'temp (deg F)',
+                                   range = c(50,140)),
+                      camera = list( up = list(x = 0, y = 0, z = 1),
+                                     eye = list(x = 1.25*1.5, y = -.75*1.5, z = .75*1.5))
+         )
+  )
+p1  
+
+
+
 
 str(DT_plot$mins.zero)
 DT_plot[,list(TC5_gal, mins.zero, TC5)]
