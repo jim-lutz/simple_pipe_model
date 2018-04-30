@@ -1,5 +1,5 @@
 # functions.R
-# R functions to help with shower clearing draw analysis
+# R functions to help with pipe draw analysis
 
 nSTART.END.TestFlags <- function(DT_data.3) {
   # function to view the number of START and END TestFlags 
@@ -21,6 +21,40 @@ nSTART.END.TestFlags <- function(DT_data.3) {
   
   # look at it
   View(DT_tests)
+  
+}
+
+
+
+pipe_gal <- function(fn.Rdata=f, DT=DT_test_info) {
+  # function to get distance to TCs from start of pipe in gallons
+  # returns a data.table of the distances for that filename
+  
+  # fn.Rdata     is the bare filename to look up data in DT_test_info
+  # DT_test_info is the file with pipe distances for each spreadsheet
+  
+  # build the .xlsx filename
+  xlsx.fname <- str_replace(fn.Rdata,".Rdata",".xlsx")
+  
+  # get the variable names TCnn_gal 
+  TCn_gals <- grep("TC[0-9]+_gal",names(DT),value = TRUE)
+  
+  # get the values for TCnn_gal for that filename from DT_test_info
+  DT_gal <- DT[fname==xlsx.fname, TCn_gals, with=FALSE]
+  
+  # convert to numeric
+  # name.cols <- names(DT_gal) # apply to all the columns
+  # DT_gal[, (names(DT_gal)) := lapply(.SD, as.numeric), .SDcols = names(DT_gal)]
+  
+  # which columns are zero
+  # except for the first column, the start of the pipe 
+  remove.col <- unlist(c(FALSE, DT_gal[1, lapply(.SD, function(x) x==0 ), .SDcols = -1]))
+  
+  # remove the columns with zero
+  DT_gal[, which(remove.col) := NULL]
+  
+  # return the data.table DT_gal
+  return(DT_gal)
   
 }
 

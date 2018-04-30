@@ -23,32 +23,10 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 # this is for testing on just one *.Rdata data.table
 f = l_Rdata[1]
 
-fn.Rdata = f # name of ./data/*.4.Rdata to work with
+# data.table of distances in gallons along pipe to TCs
+DT_gal <- pipe_gal(fn.Rdata=f, DT=DT_test_info) 
 
-pipe_gal <- function(fn.Rdata, DT_test_info) {
-  # function to get distance to TCs from start of pipe in gallons
-  # returns a data.table of the distances for that filename
-  
-  # fn.Rdata     is the bare filename to look up data in DT_test_info
-  # DT_test_info is the file with pipe distances for each spreadsheet
-  
-  # build the .xlsx filename
-  xlsx.fname <- str_replace(f,".Rdata",".xlsx")
-  
-  # get the variable names TCnn_gal 
-  TCn_gals <- grep("TC[0-9]+_gal",names(DT_test_info),value = TRUE)
-  
-  unlist(TCn_gals)
-  
-  # get the values for TCnn_gal for that filename from DT_test_info
-  DT_gal <- DT_test_info[fname==xlsx.fname, TCn_gals, with=FALSE]
-
-    
-  
-  
-  
-}
-
+STOP
 
 # load in the data.table DT_data.4
 load(file = paste0(wd_data_in,f) )
