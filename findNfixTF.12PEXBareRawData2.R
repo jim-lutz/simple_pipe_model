@@ -264,6 +264,13 @@ DT_data.3[,list(n=length(record)
                 ), by=c("start.num","test.segment")]
 # seems OK, test this?
 
+# extend test.segment one record before START
+# to include prior record as time.zero for plots
+DT_data.3[ , next.test.segment := shift(test.segment, type="lead")]
+DT_data.3[is.na(test.segment) & !is.na(next.test.segment), 
+          test.segment := next.test.segment]
+DT_data.3[, next.test.segment:=NULL]
+
 
 # check TEST nn problems
 if( nrow(
@@ -340,6 +347,7 @@ for(ts in unique(DT_data.4[!is.na(test.segment),]$test.segment)){
   rm(c.w)
 
 }
+rm(ts)
 
 
 # compare number test.segments
@@ -365,4 +373,8 @@ DT_data.4[!is.na(TestFlag) &
           !grepl("START|END",TestFlag) &        # not START|END
           !grepl("AIR|IN-AIR",TestFlag),        # not AIR|IN-AIR
           other.comment := TestFlag]
+
+# look at other.comments
+DT_data.4[,list(nrec=length(record)),by=other.comment]
+# a few typos, but OK
 

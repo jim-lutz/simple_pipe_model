@@ -215,4 +215,9 @@ See help("Deprecated")
     automated or semi-automated algorithm to pick test data sets?
     
     looks like should extend test.segment one record earlier to get time.zero for charting
+
+2018-05-01
+    extend test.segments 1 record earlier in findNfixTF
+    
+    update R, no wait till it comes through Ubuntu
     

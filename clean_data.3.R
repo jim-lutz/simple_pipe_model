@@ -32,7 +32,7 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 # for(f in l_Rdata) {
   
   # this is for testing on just one *.Rdata data.table
-  f = l_Rdata[1]
+  f = l_Rdata[1]   # 12PEXBareRawData2.Rdata
   
   # bare filename w/o extension
   bfname = str_remove(f,".Rdata")
@@ -57,7 +57,7 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # build file name of the findNfixTF.R file to source
   FNFTF.fname.R <- paste0(wd,"/findNfixTF.",bfname,".R")
 
-  # STOP  
+  STOP  
   # source the findNfixTF.R file
   source(file = FNFTF.fname.R )
   
