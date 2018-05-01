@@ -51,9 +51,20 @@ TCs <- grep("TC[0-9]+", names(DT_data.4[]), value = TRUE )
 # list of variable names to keep
 varnames <- c('test.segment', 'timestamp', 'record', TCs)
 
+# sort DT_data.4 by record
+setkey(DT_data.4, record)
 
 # add distance along pipe to DT_data.4 timestamp and temperatures
 DT_plot <- data.table( DT_data.4[, varnames, with=FALSE ], DT_gal)
+
+DT_data.4[1:20, c('test.segment', 'timestamp',"prev.timestamp" ,'record','sec_to_prev')]
+DT_plot[1:20, c('test.segment', 'timestamp', 'record')]
+DT_plot[4:6,timestamp]
+
+# problem with timestamp increment?
+DT_data.4[ , prev.timestamp := shift(timestamp)]
+DT_data.4[ , sec_to_prev := difftime(timestamp, prev.timestamp,units = "secs")]
+# no it's just a rounding artifact
 
 # sort DT_data.4 by record
 setkey(DT_data.4, record)
