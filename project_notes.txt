@@ -213,3 +213,6 @@ See help("Deprecated")
     possible surface chart?
     
     automated or semi-automated algorithm to pick test data sets?
+    
+    looks like should extend test.segment one record earlier to get time.zero for charting
+    

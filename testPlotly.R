@@ -32,8 +32,7 @@ load(file = paste0(wd_data_in,f) )
 # look at DT_data.4
 DT_data.4
 
-# figure out what to plot
-names(DT_data.4)
+# look at the test.segments
 DT_data.4[!is.na(test.segment), 
           list(start.rec = min(record),
                start.time = min(timestamp),
@@ -44,63 +43,72 @@ DT_data.4[!is.na(test.segment),
           ), by=test.segment][order(unom.GPM,u.cw)]
 
 
-DT_data.4[!is.na(test.segment), 
-          list(nrec = length(record),
-               unom.GPM  = unique(nominal.GPM),
-               utest.num = unique(test.num),
-               u.cw      = unique(cold.warm)
-               ),
-               by=test.segment][
-                 order(unom.GPM, -nrec)
-               ]
+# get the temp variable names
+TCs <- grep("TC[0-9]+", names(DT_data.4[]), value = TRUE )
+
+# list of variable names to keep
+varnames <- c('test.segment', 'timestamp', TCs)
+
+# add distance along pipe to DT_data.4 timestamp and temperatures
+DT_plot <- data.table( DT_data.4[, varnames, with=FALSE ], DT_gal)
+
+# sort DT_data.4 by record
+setkey(DT_data.4, record)
+
+# add the change in TC2
+DT_data.4[, deltaTC2 := shift(TC2, type = "lead")- TC2 ]
+
+str(DT_data.4)
+
+# get the first and last record number for each test.segment
+DT_fstrec <- 
+  DT_data.4[!is.na(test.segment), 
+            list(fstrec = min(record),
+                 lstrec = max(record)), 
+            by=test.segment]
+
+# look for biggest jump in deltaTC for start of each test.segment
+# find record number +- 10 around fstrec
+DT_fstrec[,  `:=` (ten.before = fstrec-10,
+                   ten.after  = fstrec+10)]
+
+# initialize a blank data.table to build time.zero in
+DT_tz <- data.table()
+
+# look at all the test.segments
+for(ts in unique(DT_data.4[!is.na(test.segment),]$test.segment) ) {
+  
+  # testing only
+  # ts=1
+  cat(ts,"\r")
+  
+  # find +-10 records around the first of each test.segment
+  ten.before <- DT_fstrec[test.segment==ts, ten.before]
+  ten.after  <- DT_fstrec[test.segment==ts, ten.after]
+
+  # build a data.table to add to DT_tz
+  DT_tz <- rbind(DT_tz,
+                 DT_data.4[ten.before <= record & record <= ten.after,
+                           list(timestamp, 
+                                record, 
+                                test.segment, TC1, 
+                                TC2, 
+                                deltaTC2, 
+                                ts=ts)
+                           ]
+                 )
+  
+}
+
+# look at the max deltaTC2 by ts
+DT_tz[ , list(maxdt2=max(deltaTC2)), by=ts ][order(maxdt2)]
+
+# look at the ts with lowest maxdt2
+DT_tz[ts==26,]
 
 
-STOP
+View(DT_test_info)
 
-
-
-# try test.segment 18
-# for starters x=timestamp, z=TC14
-DT_plot <-
-  DT_data.4[test.segment==18, 
-            list(timestamp,
-                 TC1, TC2, TC3, TC4, TC5, TC6, TC13, TC14
-            )
-            ]
-# start at 6:10
-
-before.ts <- force_tz(ymd_hms("2009-11-17 06:10:00"), tzone = "America/Los_Angeles")
-after.ts  <- force_tz(ymd_hms("2009-11-17 06:22:00"), tzone = "America/Los_Angeles")
-
-DT_plot <-
-  DT_data.4[before.ts <= timestamp & timestamp <= after.ts, 
-            list(timestamp,
-                 TC1, TC2, TC3, TC4, TC5, TC6, TC13, TC14
-            )
-            ]
-
-
-# 1-dimension
-# p <- plot_ly(data = DT_plot, x = ~TC14, type = "box")
-# p
-
-# 2-dimension, 1 TC
-# p <- plot_ly(data = DT_plot, x = ~timestamp, y = ~TC14, 
-#              type = "scatter", mode =  "lines" )
-# p
-
-# 2-dimension, 3 TC traces
-# p <- plot_ly(data = DT_plot, x = ~timestamp, y= ~TC2,
-#              type = "scatter", mode =  "lines" ) %>%
-#     add_trace( y = ~TC5) %>%
-#     add_trace( y = ~TC14) 
-# p
-
-# View(DT_test_info)
-
-
-# add TCnn_gal to DT_plot
-DT_plot <- data.table( DT_plot, DT_gal)
 
 # convert timestamp to minutes from start
 DT_plot[1:21,list(timestamp, TC2)]
@@ -135,89 +143,9 @@ p <- plot_ly(data = DT_plot,
          )
 p  
 
-# # my plotly user account
-# usr <- Sys.getenv("plotly_username", NA)
-# if (!is.na(usr)) {
-#   # your account info https://api.plot.ly/v2/#users
-#   api(sprintf("users/%s", usr))
-#   # your folders/files https://api.plot.ly/v2/folders#user
-#   api(sprintf("folders/home?user=%s", usr))
-# }
-
-
 
 # post the plot
 rplot <- api_create(p, filename = "1_2 PEX BARE 1 GPM")
 
 # rm(p)
 
-# convert 1 trace per second?
-str(DT_plot)
-
-# convert TCn_gal to numeric
-DT_plot[, `:=` (TC1_gal =  as.numeric(TC1_gal),
-                TC2_gal =  as.numeric(TC2_gal),
-                TC3_gal =  as.numeric(TC3_gal),
-                TC4_gal =  as.numeric(TC4_gal),
-                TC5_gal =  as.numeric(TC5_gal),
-                TC6_gal =  as.numeric(TC6_gal),
-                TC13_gal = as.numeric(TC13_gal),
-                TC14_gal = as.numeric(TC14_gal))
-                ]
-
-# mins.zero to seconds
-DT_plot[, secs.zero := round(mins.zero * 60)]
-
-# remove timestamp and mins.zero
-DT_plot[, `:=` (timestamp = NULL,
-                mins.zero = NULL)
-        ]
-
-# remove first 4 records
-DT_plot <- DT_plot[5:nrow(DT_plot)]
-
-names(DT_plot)
-DT_plot[1:10, list(TC1,TC2,secs.zero)]
-
-# rename TC and TC _gal variables
-setnames(DT_plot, old = c("TC1", "TC2", "TC3", "TC4", "TC5", "TC6", "TC13", "TC14",
-                          "TC1_gal", "TC2_gal", "TC3_gal", "TC4_gal", "TC5_gal", "TC6_gal", "TC13_gal", "TC14_gal",
-                          "secs.zero"),
-         new = c("temp1", "temp2", "temp3", "temp4", "temp5", "temp6", "temp7", "temp8",
-                 "dist1", "dist2", "dist3", "dist4", "dist5", "dist6", "dist7", "dist8",
-                 "secs.zero")
-)
-
-DT_plot[1:10, ]
-str(DT_plot)
-dcast(DT_plot,  ~ ...)
-
-# 3-dimension, multiple pipe traces
-p1 <- plot_ly(data = DT_plot,
-             x = ~mins.zero, y = ~TC1_gal,  z = ~TC1,  name = 'TC1',
-             type = "scatter3d", mode= "lines") %>%
-  add_trace( y = ~TC2_gal,  x = ~mins.zero, z = ~TC2,  name = 'TC2' ) %>%
-  add_trace( y = ~TC3_gal,  x = ~mins.zero, z = ~TC3,  name = 'TC3' ) %>%
-  add_trace( y = ~TC4_gal,  x = ~mins.zero, z = ~TC4,  name = 'TC4' ) %>%
-  add_trace( y = ~TC5_gal,  x = ~mins.zero, z = ~TC5,  name = 'TC5' ) %>%
-  add_trace( y = ~TC6_gal,  x = ~mins.zero, z = ~TC6,  name = 'TC6' ) %>%
-  add_trace( y = ~TC13_gal, x = ~mins.zero, z = ~TC13, name = 'TC13' ) %>%
-  add_trace( y = ~TC14_gal, x = ~mins.zero, z = ~TC14, name = 'TC14' ) %>%
-  layout(title = "1/2 PEX, BARE, 1 GPM", 
-         scene = list(yaxis = list(title = 'distance from start of pipe (gal)',
-                                   range = c(0,1.25)),
-                      xaxis = list(title = 'time from start of draw (min)',
-                                   range = c(0,6.0)),
-                      zaxis = list(title = 'temp (deg F)',
-                                   range = c(50,140)),
-                      camera = list( up = list(x = 0, y = 0, z = 1),
-                                     eye = list(x = 1.25*1.5, y = -.75*1.5, z = .75*1.5))
-         )
-  )
-p1  
-
-
-
-
-str(DT_plot$mins.zero)
-DT_plot[,list(TC5_gal, mins.zero, TC5)]
