@@ -236,5 +236,9 @@ See help("Deprecated")
         nom.diam, material, insul level, nom gpm, 
         Tpipe.start, Tair.ave, date
     
+2018-05-02
+    making clean_data.4.R to get ready for plotting test.segments
+    got Tpipe.start, Tair.ave so far
+    
     
     
