@@ -240,5 +240,8 @@ See help("Deprecated")
     making clean_data.4.R to get ready for plotting test.segments
     got Tpipe.start, Tair.ave so far
     
+    should I make a separate data.table for test.segments?
+    
+    
     
     

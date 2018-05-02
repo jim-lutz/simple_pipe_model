@@ -62,10 +62,6 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # get the TC variable names
   TCs <- grep("TC[0-9]+", names(DT_data.4[]), value = TRUE )
   
-  # # list of variable names to keep
-  # varnames <- c('test.segment', 'timestamp', 'record', TCs)
-  # 
-
   # sort DT_data.4 by record
   setkey(DT_data.4, record)
   
@@ -91,7 +87,7 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # look at the first 3 in each test.segment  
   DT_data.5[
     DT_data.5[!is.na(test.segment),.(index=.I[1:3]), by=test.segment]$index, 
-        # this give the row numbers of the first 3 rows by test.segment
+        # this gives the row numbers of the first 3 rows by test.segment
     list(timestamp, time.zero, mins.zero), 
     by=test.segment]
 
@@ -117,43 +113,63 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   
   # merge Tpipe.start onto DT_data.5
   DT_data.5 <-  merge(DT_data.5,DT_Tpipe.start, by="test.segment", all.x = TRUE )
-   
-STOP 
-
-  # look the max mins.zero (duration of test.segment) by test.segment
-  plot(
-    DT_data.5[!is.na(test.segment), list(max.min = max(mins.zero),
-                                       nmin    = (length(record)-1)/60),
-            by=test.segment][order(nmin)]$nmin
-  )
-  # if it's below 10 mins it's likely an incomplete test.
-
-  # find last minute temp rise @ TC14
-  # drop the NA test.segments and keep TC14, last thermal couple
-  DT_test1 <- DT_data.4[!is.na(test.segment), 
-                        list(TC14, nominal.GPM, nrec=length(record)), 
-                        by=test.segment]
-  
-  # select the last 19 rows in each test.segment
-  DT_test2 <- DT_test1[,.SD[(.N-19):.N],by=test.segment]
-  
-  # check if temperature range is > ?
-  DT_test3 <-
-    DT_test2[ , list( temp.rise = max(TC14)-min(TC14),
-                      nom.GPM   = unique(nominal.GPM),
-                      nrec      = unique(nrec)              
-    ), 
-    by=test.segment][order(temp.rise, nom.GPM)]
-  
-  # quick look at distribution of last 2 minute temperature rise
-  plot(  DT_test3$temp.rise  )
   
   
+  # determine which test.segments are good enough to plot
+  # # look the max mins.zero (duration of test.segment) by test.segment
+  # plot(
+  #   DT_data.5[!is.na(test.segment), list(max.min = max(mins.zero),
+  #                                      nmin    = (length(record)-1)/60),
+  #           by=test.segment][order(nmin)]$nmin
+  # )
+  # # if it's below 10 mins it's likely an incomplete test.
+  # 
+  # # look at temperature range of the final TC for the last 2 minutes
+  # # find the last TC
+  # TClast <- TCs[length(TCs)]
+  # 
+  # # list of variables to keep
+  # list.vars <- paste0(".( ", TClast, ", nominal.GPM, nrec=length(record))")
+  # 
+  # # drop the NA test.segments and keep TC14, last thermal couple
+  # DT_test1 <- 
+  #   DT_data.5[!is.na(test.segment),
+  #             eval(parse(text=list.vars)),
+  #             by=test.segment]
+  # 
+  # # select the last 19 rows in each test.segment
+  # DT_test2 <- DT_test1[,.SD[(.N-19):.N],by=test.segment]
+  # 
+  # # check if temperature range is > ?
+  # DT_test3 <-
+  #   DT_test2[ , list( temp.rise = max(TC14)-min(TC14),
+  #                     nom.GPM   = unique(nominal.GPM),
+  #                     nrec      = unique(nrec)              
+  #   ), 
+  #   by=test.segment][order(temp.rise, nom.GPM)]
+  # 
+  # # quick look at distribution of last 2 minute temperature rise
+  # plot(  DT_test3$temp.rise  )
+  # 
+  # # sorted last 2 minute temp range then looked at a lot of charts
+  # # nrec > 500, (max(mins.zero)>8.4) only misses a couple that might be OK
   
+  # add number of record by test.segment
+  DT_data.5[!is.na(test.segment), nrec:=length(record), by=test.segment ]
   
-  STOP  
-  # source the findNfixTF.R file
-  source(file = FNFTF.fname.R )
+  # add plot.OK = TRUE when nrec>500
+  DT_data.5[nrec>500, plot.OK:=TRUE, by=test.segment ]
+  
+  # see what that did
+  DT_data.5[plot.OK==TRUE,
+            list(nrec    = unique(nrec),
+                 plot.OK = unique(plot.OK),
+                 nom.GPM = unique(nominal.GPM), 
+                 c.w     = unique(cold.warm), 
+                 Tstart  = unique(Tpipe.start) 
+            ),
+            by=test.segment][order(nom.GPM, Tstart)]
+  # that's only the cold start test.segments
   
   # save DT_data.5 as .Rdata
   save(DT_data.5, file = paste0(wd_data_out, f))
