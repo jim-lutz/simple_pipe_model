@@ -221,3 +221,20 @@ See help("Deprecated")
     
     update R, no wait till it comes through Ubuntu
     
+    add to findNfixTF
+    
+    criteria to accept test.segment, 
+    sorted last 2 minute temp range then looked at a lot of charts
+    nrec > 500, only misses a couple that might be OK
+    
+    calc Tair.ave by test.segment
+    calc Tstart as ave TC3:TC14 at time.zero by test.segment
+    
+    
+    
+    add to plotly title:
+        nom.diam, material, insul level, nom gpm, 
+        Tpipe.start, Tair.ave, date
+    
+    
+    

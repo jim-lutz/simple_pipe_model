@@ -57,42 +57,61 @@ setkey(DT_data.4, record)
 # add distance along pipe to DT_data.4 timestamp and temperatures
 DT_plot <- data.table( DT_data.4[, varnames, with=FALSE ], DT_gal)
 
-DT_data.4[1:20, c('test.segment', 'timestamp',"prev.timestamp" ,'record','sec_to_prev')]
-DT_plot[1:20, c('test.segment', 'timestamp', 'record')]
-DT_plot[4:6,timestamp]
-
-# problem with timestamp increment?
-DT_data.4[ , prev.timestamp := shift(timestamp)]
-DT_data.4[ , sec_to_prev := difftime(timestamp, prev.timestamp,units = "secs")]
-# no it's just a rounding artifact
-
-# sort DT_data.4 by record
-setkey(DT_data.4, record)
-
-DT_data.4[1:10, c('test.segment', 'timestamp', 'record')]
-DT_plot[1:10, c('test.segment', 'timestamp')]
+# see if worked
+str(DT_plot)
+DT_plot[DT_plot[,.SD[1:3], by=test.segment], 
+        list(timestamp, time.zero)]
 
 # calculate time.zero from the start of each test.segment
 DT_plot[!is.na(test.segment), time.zero := min(timestamp), by=test.segment]
 
-# see if worked
-DT_plot[DT_plot[,.SD[1:3], by=test.segment], 
-        list(timestamp, time.zero)]
-
-
-
-DT_plot[1:21,list(timestamp, TC2)]
-# set time.zero 2009-11-17 06:15:19, record just before TC2 starts to rise
-time.zero <- force_tz(ymd_hms("2009-11-17 06:15:19"), tzone = "America/Los_Angeles")
-
 # minutes since time.zero
 DT_plot[, mins.zero := as.numeric(difftime(timestamp, time.zero, units = "mins"))]
 
+# find the max mins.zero by test.segment
+plot(
+DT_plot[!is.na(test.segment), list(max.min = max(mins.zero),
+               nmin    = (length(record)-1)/60),
+        by=test.segment][order(nmin)]$nmin
+)
+# if it's below 10 mins it's likely an incomplete test.
+# test.segment 49 loses temp along the pipe.
+
+DT_plot[test.segment==49]
+DT_data.4[test.segment==49]
+
+# find last minute temp rise @ TC14
+# drop the NA test.segments and keep TC14, last thermal couple
+DT_test1 <- DT_data.4[!is.na(test.segment), 
+                      list(TC14, nominal.GPM, nrec=length(record)), 
+                      by=test.segment]
+
+# select the last 19 rows in each test.segment
+DT_test2 <- DT_test1[,.SD[(.N-19):.N],by=test.segment]
+
+# check if temperature range is > ?
+DT_test3 <-
+DT_test2[ , list( temp.rise = max(TC14)-min(TC14),
+                  nom.GPM   = unique(nominal.GPM),
+                  nrec      = unique(nrec)              
+                  ), 
+          by=test.segment][order(temp.rise, nom.GPM)]
+
+# quick look at distribution of last 2 minute temperature rise
+plot(  DT_test3$temp.rise  )
+
+# calc Tair.ave
+DT_data.4[!is.na(test.segment), list(Tair.ave = (mean(TairNear)+mean(TairFar))/2),
+          by=test.segment]
+
+# calc Tpipe.start
+DT_data.4[, ]
+
 
 # 3-dimension, multiple TC traces
-p <- plot_ly(data = DT_plot,
-             x = ~TC1_gal,  y = ~mins.zero, z = ~TC1,  name = 'TC1',
+p <- plot_ly(data = DT_plot[test.segment==10], 
              type = "scatter3d", mode= "lines") %>%
+  add_trace( x = ~TC1_gal,  y = ~mins.zero, z = ~TC1,  name = 'TC1' ) %>%
   add_trace( x = ~TC2_gal,  y = ~mins.zero, z = ~TC2,  name = 'TC2' ) %>%
   add_trace( x = ~TC3_gal,  y = ~mins.zero, z = ~TC3,  name = 'TC3' ) %>%
   add_trace( x = ~TC4_gal,  y = ~mins.zero, z = ~TC4,  name = 'TC4' ) %>%
@@ -104,7 +123,7 @@ p <- plot_ly(data = DT_plot,
          scene = list(xaxis = list(title = 'distance from start of pipe (gal)',
                                    range = c(0,1.25)),
                       yaxis = list(title = 'time from start of draw (min)',
-                                   range = c(0,6.0)),
+                                   range = c(0,10.0)),
                       zaxis = list(title = 'temp (deg F)',
                                    range = c(50,140)),
                       camera = list( up = list(x = 0, y = 0, z = 1),

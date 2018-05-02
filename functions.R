@@ -43,8 +43,8 @@ pipe_gal <- function(fn.Rdata=f, DT=DT_test_info) {
   DT_gal <- DT[fname==xlsx.fname, TCn_gals, with=FALSE]
   
   # convert to numeric
-  # name.cols <- names(DT_gal) # apply to all the columns
-  # DT_gal[, (names(DT_gal)) := lapply(.SD, as.numeric), .SDcols = names(DT_gal)]
+  name.cols <- names(DT_gal) # apply to all the columns
+  DT_gal[, (names(DT_gal)) := lapply(.SD, as.numeric), .SDcols = names(DT_gal)]
   
   # which columns are zero
   # except for the first column, the start of the pipe 
