@@ -242,6 +242,51 @@ See help("Deprecated")
     
     should I make a separate data.table for test.segments?
     
+    possible asymmetric logistic  f(x)= d+ (a-d)/(1+(x/c)^b)
+    A is the minimal assymptote 
+    B is Hill's slope 
+    C is the inflection point 
+    D is the maximum asymptote
+    note: this is reverse logistice
+    !w Generalised logistic function
     
+    !w Gompertz curve is probably a better fit.
     
+     Fabio Cavallini (2018) Fitting a Logistic Curve to Data, The College Mathematics Journal, 24:3, 247-253, DOI: 10.1080/07468342.1993.11973540 
+     
+    Arnold, David. “Fitting a Logistic Curve to Data.” College of the Redwoods, 2002. https://www.math.hmc.edu/~depillis/PCMI2005WEBSITE/logistic_REDWOODS.pdf.
+
+    Berger, RD. “Comparison of the Gompertz and Logistic Equations to Describe Plant Disease Progress.” Phytopathology 71, no. 7 (1981): 716–719. http://www.apsnet.org/publications/phytopathology/backissues/Documents/1981Articles/Phyto71n07_716.pdf.
+
+Fox, J, and S Weisberg. Time-Series Regression and Generalized Least Squares in R, An Appendix to An R Companion to Applied Regression. Sage Publications, New York, NY, 2010. https://socialsciences.mcmaster.ca/jfox/Books/Companion/appendix/Appendix-Nonlinear-Regression.pdf.
+
+Appendix-Nonlinear-Regression.pdf
+https://socialsciences.mcmaster.ca/jfox/Books/Companion/appendix/Appendix-Nonlinear-Regression.pdf
+
+Gompertz function - Wikipedia
+https://en.wikipedia.org/wiki/Gompertz_function
+
+R Dashboards
+https://plot.ly/r/dashboard/
+
+1/2 PEX BARE, 4.0 GPM, Tstart = 57.5 | scatter3d made by Jlutz | plotly
+https://plot.ly/~jlutz/25/
+
+1/2 PEX BARE, 4.0 GPM, Tstart = 94.1 | scatter3d made by Jlutz | plotly
+https://plot.ly/~jlutz/27/
+
+1/2 PEX BARE, 0.5 GPM, Tstart = 59.6 | scatter3d made by Jlutz | plotly
+https://plot.ly/~jlutz/9/
+
+1/2 PEX BARE, 0.5 GPM, Tstart = 87.5 | scatter3d made by Jlutz | plotly
+https://plot.ly/~jlutz/11/
+
+2018-05-14
+
+    after findNfix build a data.table about the test.segments,
+    may need to do another search for the cool down segments
+    
+    Generalized Additive Models for Location, Scale and Shape 
+    http://www.gamlss.com/
+    Might be the best way to fit curves to data
     

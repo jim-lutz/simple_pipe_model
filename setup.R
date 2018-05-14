@@ -71,9 +71,13 @@ library(janitor)
 if(!require(plotly)){install.packages("plotly")}
 library(plotly)
 
+# required to export images from plotly
+if(!require(RSelenium)){install.packages("RSelenium")}
+library(RSelenium)
+
 # environment variables for my plotly account.
 Sys.setenv("plotly_username" = "jlutz")
-Sys.setenv("plotly_api_key" = "rBZZhtmAhMwlQShilGI7")
+Sys.setenv("plotly_api_key" = "8ynkq1jhd9f3auYGyO9O")
 
 # change the default background for ggplot2 to white, not gray
 theme_set( theme_bw() )
