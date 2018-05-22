@@ -284,7 +284,6 @@ https://plot.ly/~jlutz/11/
 2018-05-14
 
     after findNfix build a data.table about the test.segments,
-<<<<<<< HEAD
     nominal.GPM 4 is .5 GPM off
     Tair.
 
@@ -314,13 +313,4 @@ https://plot.ly/~jlutz/11/
     
     added ave.GPM by test.segment to DT_data.5
     
-    
-        
-=======
-    may need to do another search for the cool down segments
-    
-    Generalized Additive Models for Location, Scale and Shape 
-    http://www.gamlss.com/
-    Might be the best way to fit curves to data
->>>>>>> e38f788ce6f309f9f4e80c20a86fc702e2abeff3
-    
+   
