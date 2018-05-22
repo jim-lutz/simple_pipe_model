@@ -32,13 +32,20 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 # for(f in l_Rdata) {
   
   # this is for testing on just one *.Rdata data.table
-  f = l_Rdata[1]   # 12PEXBareRawData2.Rdata
+  # f = l_Rdata[1]   # 12PEXBareRawData2.Rdata
+  f = l_Rdata[2]   # 34PEXR47RawData2.Rdata
   
   # bare filename w/o extension
   bfname = str_remove(f,".Rdata")
   
   # build a 1 row data.table of distances in gallons along pipe to TCs
   DT_gal <- pipe_gal(fn.Rdata=f, DT=DT_test_info) 
+  
+  # build the .xlsx filename
+  xlsx.fname <- str_replace(f,".Rdata",".xlsx")
+  
+  # get gal_pls from DT_test_info
+  gal_pls <- as.numeric(DT_test_info[fname==xlsx.fname,gal_pls])
   
   # load a data.table DT_data.4
   load(file = paste0(wd_data_in,f) )
@@ -55,6 +62,8 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
                  nrec      = length(record),
                  utest.num = unique(test.num),
                  unom.GPM  = unique(nominal.GPM),
+                 ave.GPM   = (sum(pulse1)+sum(pulse2))*gal_pls/2 / # pulses to gallons
+                                length(record)*60, # gallons to GPM
                  u.cw      = unique(cold.warm)
             ), by=test.segment][order(unom.GPM,u.cw)]
   
@@ -114,63 +123,31 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # merge Tpipe.start onto DT_data.5
   DT_data.5 <-  merge(DT_data.5,DT_Tpipe.start, by="test.segment", all.x = TRUE )
   
+  # add the average GPM
+  DT_ave.GPM <-
+  DT_data.4[!is.na(test.segment), 
+            list(ave.GPM = (sum(pulse1)+sum(pulse2))*gal_pls/2 / # pulses to gallons
+                   length(record)*60 # gallons to GPM)
+            ), by=test.segment]
+            
+  # merge ave.GPM onto DT_data.5
+  DT_data.5 <-  merge(DT_data.5,DT_ave.GPM, by="test.segment", all.x = TRUE )
   
-  # determine which test.segments are good enough to plot
-  # # look the max mins.zero (duration of test.segment) by test.segment
-  # plot(
-  #   DT_data.5[!is.na(test.segment), list(max.min = max(mins.zero),
-  #                                      nmin    = (length(record)-1)/60),
-  #           by=test.segment][order(nmin)]$nmin
-  # )
-  # # if it's below 10 mins it's likely an incomplete test.
-  # 
-  # # look at temperature range of the final TC for the last 2 minutes
-  # # find the last TC
-  # TClast <- TCs[length(TCs)]
-  # 
-  # # list of variables to keep
-  # list.vars <- paste0(".( ", TClast, ", nominal.GPM, nrec=length(record))")
-  # 
-  # # drop the NA test.segments and keep TC14, last thermal couple
-  # DT_test1 <- 
-  #   DT_data.5[!is.na(test.segment),
-  #             eval(parse(text=list.vars)),
-  #             by=test.segment]
-  # 
-  # # select the last 19 rows in each test.segment
-  # DT_test2 <- DT_test1[,.SD[(.N-19):.N],by=test.segment]
-  # 
-  # # check if temperature range is > ?
-  # DT_test3 <-
-  #   DT_test2[ , list( temp.rise = max(TC14)-min(TC14),
-  #                     nom.GPM   = unique(nominal.GPM),
-  #                     nrec      = unique(nrec)              
-  #   ), 
-  #   by=test.segment][order(temp.rise, nom.GPM)]
-  # 
-  # # quick look at distribution of last 2 minute temperature rise
-  # plot(  DT_test3$temp.rise  )
-  # 
-  # # sorted last 2 minute temp range then looked at a lot of charts
-  # # nrec > 500, (max(mins.zero)>8.4) only misses a couple that might be OK
-  
-  # add number of record by test.segment
+  # add number of records by test.segment
   DT_data.5[!is.na(test.segment), nrec:=length(record), by=test.segment ]
   
   # add plot.OK = TRUE when nrec>500
-  DT_data.5[nrec>500, plot.OK:=TRUE, by=test.segment ]
+  # DT_data.5[nrec>500, plot.OK:=TRUE, by=test.segment ]
   
   # see what that did
-  DT_data.5[plot.OK==TRUE,
+  DT_data.5[!is.na(test.segment),
             list(nrec    = unique(nrec),
-                 plot.OK = unique(plot.OK),
                  nom.GPM = unique(nominal.GPM), 
                  c.w     = unique(cold.warm), 
                  Tstart  = unique(Tpipe.start) 
             ),
             by=test.segment][order(nom.GPM, Tstart)]
-  # that's only the cold start test.segments
-  
+
   # save DT_data.5 as .Rdata
   save(DT_data.5, file = paste0(wd_data_out, f))
 

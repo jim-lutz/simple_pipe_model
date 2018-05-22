@@ -309,6 +309,9 @@ https://plot.ly/~jlutz/11/
         move 'TEST 1' up one record & insert 'COLD'       
         
     
+    modify clean_data.4.R to run 34PEXR47RawData2
+    
+    added ave.GPM by test.segment to DT_data.5
     
     
         
