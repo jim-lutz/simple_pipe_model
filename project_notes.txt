@@ -305,6 +305,8 @@ https://plot.ly/~jlutz/11/
         some TestFlags R-4.7 & R-4.6
             assume R-4.6 is typo, replace w/ R-4.7
        add dash & decimal to finsul.level      
+       missed TestFlag 'COLD' @ record==286934, 
+        move 'TEST 1' up one record & insert 'COLD'       
         
     
     

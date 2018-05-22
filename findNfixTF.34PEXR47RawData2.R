@@ -316,6 +316,15 @@ DT_data.4[grepl("COLD|WARM",TestFlag),
 DT_data.4[is.na(cold.warm) & grepl("COLD|WARM",TestFlag), 
           cold.warm := TestFlag ]
 
+# issue with test.segment == 25
+View(
+DT_data.4[test.segment==25, list(timestamp, record, TestFlag)]
+)
+# missed COLD, move 'TEST 1' up one record & insert 'COLD'
+DT_data.4[record==286933, TestFlag:='TEST 1']
+DT_data.4[record==286934, `:=` (TestFlag  ='COLD',
+                                cold.warm ='COLD')]
+
 # each test.segment should have a matched pair of cold.warm
 n.c.w <-
   DT_data.4[cold.warm %in% c("WARM","COLD"), list(nrec=length(record)),
@@ -359,7 +368,7 @@ DT_data.4[!is.na(test.segment),
 # find other.comments
 DT_data.4[!is.na(TestFlag) & 
           !grepl("PEX|CPVC|RigidCU",TestFlag) & # not a pipe material
-          !grepl("BARE|R52|R47|R55",TestFlag) & # not an insulation level
+          !grepl("BARE|R-5|R-4",TestFlag) & # not an insulation level
           !grepl("TEST [1-9][0-9]*",TestFlag) & # not a TEST nn              
           !grepl("COLD|WARM",TestFlag) &        # not COLD|WARM 
           !grepl("START|END",TestFlag) &        # not START|END
