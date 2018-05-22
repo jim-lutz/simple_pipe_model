@@ -32,8 +32,9 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 # for(f in l_Rdata) {
   
   # this is for testing on just one *.Rdata data.table
-  f = l_Rdata[1]   # 12PEXBareRawData2.Rdata
-  
+  #f = l_Rdata[1]   # 12PEXBareRawData2.Rdata
+  f = l_Rdata[6]   # 34PEXR47RawData2.Rdata
+
   # bare filename w/o extension
   bfname = str_remove(f,".Rdata")
   
@@ -53,6 +54,15 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   fnom.pipe.diam <- paste0(str_sub(bfname,1,1),'/',str_sub(bfname,2,2))
   fpipe.matl <- str_match(bfname, "[1-9]([a-zA-Z]+)(Ba|R[45])")[2]
   finsul.level <- str_match(bfname, "(PEX|CPVC|RigidCU)(.+)Raw")[3]
+  
+  # edit finsul.level
+  if(finsul.level != 'Bare') {
+    # split into list of characters
+    fl <- unlist(strsplit(finsul.level, split = ""))
+
+        # add dash and decimal
+    finsul.level <- paste0(fl[1],"-",fl[2],".",fl[3])
+  }
   
   # build file name of the findNfixTF.R file to source
   FNFTF.fname.R <- paste0(wd,"/findNfixTF.",bfname,".R")

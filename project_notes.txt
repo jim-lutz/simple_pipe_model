@@ -288,7 +288,7 @@ https://plot.ly/~jlutz/11/
     Tair.
 
     May want to keep DT_test.segments in ./data since it could apply to all tests
-    
+    should check if flow changes during test.segments    
     
     may need to do another search for the cool down segments
     
@@ -296,5 +296,18 @@ https://plot.ly/~jlutz/11/
     http://www.gamlss.com/
     Might be the best way to fit curves to data
     
+2018-05-21
+    3/4 insulated PEX
+    clean_data.3.R which calls 
+    findNfixTF.34PEXR47RawData2.R
+        some NA timestamps
+        one TestFlag 'PEX FIXTURE', assume should be 'OTHER FIXTURE' to match other FIXTUREs
+        some TestFlags R-4.7 & R-4.6
+            assume R-4.6 is typo, replace w/ R-4.7
+       add dash & decimal to finsul.level      
+        
     
+    
+    
+        
     
