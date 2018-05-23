@@ -88,7 +88,7 @@ for(f in l_Rdata) {
                                                time.zero, 
                                                units = "mins"))]
 
-  # confirm time.zero & mins.zero
+  # look at time.zero & mins.zero
   DT_data.5[ , list(time.zero = unique(time.zero),
                     mins.zero = unique(mins.zero)),
              by=test.segment]
@@ -122,7 +122,8 @@ for(f in l_Rdata) {
   
   # merge Tpipe.start onto DT_data.5
   DT_data.5 <-  merge(DT_data.5,DT_Tpipe.start, by="test.segment", all.x = TRUE )
-  
+
+    
   # calc average GPM
   DT_ave.GPM <-
   DT_data.4[!is.na(test.segment), 
@@ -133,8 +134,54 @@ for(f in l_Rdata) {
   # merge ave.GPM onto DT_data.5
   DT_data.5 <-  merge(DT_data.5,DT_ave.GPM, by="test.segment", all.x = TRUE )
   
+  # calc running average pulses per second, averaged over 10 records
+  # add 10 (1:9) lag and lead columns for pulse1 and pulse2
+  cols = c("pulse1", "pulse2")
+  
+  # 1:9 leading pulse1 & pulse2
+  leadcols = c( paste0( cols[1], "_lead",1:9 ),
+                paste0( cols[2], "_lead",1:9 ))
+  DT_data.5[, (leadcols) := shift(.SD, 1:9, NA, "lead"), .SDcols=cols, by=test.segment]
+  
+  # 1:9 lagging pulse1 & pulse2
+  lagcols = c( paste0( cols[1], "_lag",1:9 ),
+                paste0( cols[2], "_lag",1:9 ))
+  DT_data.5[, (lagcols) := shift(.SD, 1:9, NA, "lag"), .SDcols=cols, by=test.segment]
+  
+  # pulse names
+  pulse_names <- grep("pulse",names(DT_data.5), value = TRUE )
+
+  # DT_pulses
+  DT_pulses <-
+  DT_data.5[!is.na(test.segment),
+              .SD,
+              by=c("test.segment","record"),
+              .SDcols=pulse_names]
+  
+  # calculate running average pulses
+  DT_pulses[, pulse_smooth := rowMeans(.SD, na.rm = TRUE), 
+                 .SDcols=pulse_names
+                 ]
+
+  # drop the all the pulses except pulse1, pulse2, pulse_smooth
+  drop_pulse_names  <-  grep("_l", pulse_names, value = TRUE)
+  DT_pulses[, drop_pulse_names[]:=NULL ]
+  DT_data.5[, drop_pulse_names[]:=NULL ]
+  rm(drop_pulse_names, pulse_names,lagcols, leadcols)
+  
+  # merge DT_pulses onto DT_data.5
+  DT_data.5 <-  merge(DT_data.5,DT_pulses, by=c("test.segment","record"), all.x = TRUE )
+  
+  
+  
+  
+  
   # add number of records by test.segment
   DT_data.5[!is.na(test.segment), nrec:=length(record), by=test.segment ]
+  
+  
+  
+  
   
   # add plot.OK = TRUE when nrec>500
   # DT_data.5[nrec>500, plot.OK:=TRUE, by=test.segment ]
@@ -151,9 +198,8 @@ for(f in l_Rdata) {
   # save DT_data.5 as .Rdata
   save(DT_data.5, file = paste0(wd_data_out, f))
 
-  # plotting here?
+  # plotting here? moved test.segment summary plotting to clean_data.5.R
   
-    
   # remove data.tables before next spreadsheet
   rm(DT_data.4, DT_data.5)
 

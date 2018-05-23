@@ -319,3 +319,26 @@ https://plot.ly/~jlutz/11/
     
     in addition to ave.GPM, maybe do start.GPM & end.GPM as well.       
     think about adding starting & ending Reynolds number for each test.segment
+    
+2018-05-23
+    AV/PV & deltaTnorm for Yanda.
+    PV is location of TC in gallons
+    AV is volume that flowed since t_0, GPM * t(minutes)
+    or rather sum of running average pulses since t_0 * gallon per pulse
+    
+    GPM is recorded in pulses per second so will need to do a running average 
+    averaged over how many seconds?
+    pulse per second = pulse per minute / 60 (second/minute)
+    pulse per minute = pulse per gallon * gallon per minute
+    pulse per gallon = 1/ gallon per pulse
+    gallon per pulse = 0.01725
+    gallon per minute =~ 0.5
+    pulse per second = (1 / 0.01725 ) * 0.5 / 60
+        = 0.483091787439613
+
+    seems like 10 seconds would be enough for running average.
+    take average of forward and backward running average across test.segment
+    to avoid missing values at begining or end
+    
+    do this in clean_data.4.R
+    

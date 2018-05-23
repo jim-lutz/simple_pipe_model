@@ -1,6 +1,7 @@
 # clean_data.5.R
 # script to build test segments data.table from ./data/5/*.Rdata
 # saves it to ./data/5/*.test.segments.Rdata
+# also some diagnostic plots of all test.segments by test suite 
 # Jim Lutz "Mon May 14 08:51:41 2018"
 
 # set packages & etc
@@ -30,7 +31,8 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*Data[12].Rdata")
 for(f in l_Rdata) {
   
   # this is for testing on just one *.Rdata data.table
-  # f = l_Rdata[2]   # 12PEXBareRawData2.Rdata
+  # f = l_Rdata[1]   # 12PEXBareRawData2.Rdata
+  # f = l_Rdata[2]   # 34PEXR47RawData2.Rdata
   
   # bare filename w/o extension
   bfname = str_remove(f,".Rdata")
