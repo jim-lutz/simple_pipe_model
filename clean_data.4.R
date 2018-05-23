@@ -1,5 +1,5 @@
 # clean_data.4.R
-# script to select test segments to plot in ./data/4/*.Rdata files
+# script to add info for test segments in ./data/4/*.Rdata files
 # saves data.tables as ./data/5/*.Rdata
 # Jim Lutz "Wed May  2 06:00:05 2018"
 
@@ -25,15 +25,15 @@ dir.create(paste0(wd_data,"5/"))
 wd_data_in    = paste0(wd_data, "4/")
 wd_data_out   = paste0(wd_data, "5/")
 
-# get all the ./data/*.4.Rdata files
+# get all the ./data/4/*.Rdata files
 l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 
 # loop through all the files
-# for(f in l_Rdata) {
+for(f in l_Rdata) {
   
   # this is for testing on just one *.Rdata data.table
   # f = l_Rdata[1]   # 12PEXBareRawData2.Rdata
-  f = l_Rdata[2]   # 34PEXR47RawData2.Rdata
+  # f = l_Rdata[2]   # 34PEXR47RawData2.Rdata
   
   # bare filename w/o extension
   bfname = str_remove(f,".Rdata")
@@ -123,7 +123,7 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # merge Tpipe.start onto DT_data.5
   DT_data.5 <-  merge(DT_data.5,DT_Tpipe.start, by="test.segment", all.x = TRUE )
   
-  # add the average GPM
+  # calc average GPM
   DT_ave.GPM <-
   DT_data.4[!is.na(test.segment), 
             list(ave.GPM = (sum(pulse1)+sum(pulse2))*gal_pls/2 / # pulses to gallons
@@ -157,5 +157,5 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # remove data.tables before next spreadsheet
   rm(DT_data.4, DT_data.5)
 
-# }  loop turned off
+}  # loop turned off
   
