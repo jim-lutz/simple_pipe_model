@@ -30,14 +30,14 @@ clean_data.3.R
     input:  ./data/DT_test_info.Rdata
             ./data/3/*.Rdata
     source: findNfixTF.*.R  
-                only 12PEXBareRawData2 so far
+                12PEXBareRawData2, 34PEXR47RawData2 so far
     output: ./data/4/*.Rdata
 
 clean_data.4.R
     # script to select test segments to plot in ./data/4/*.Rdata files
     input:  ./data/DT_test_info.Rdata
             ./data/4/*.Rdata
-                only 12PEXBareRawData2 so far
+                12PEXBareRawData2, 34PEXR47RawData2 so far
     output: ./data/5/*.Rdata
              
 Plotly5.R
@@ -52,6 +52,6 @@ clean_data.5.R
     # script to build test segments data.table from ./data/5/*.Rdata
     input:  ./data/DT_test_info.Rdata
             ./data/5/*.Rdata
-                only 12PEXBareRawData2 so far
+                12PEXBareRawData2, 34PEXR47RawData2 so far
     output: ./data/5/*.test.segment.Rdata
             

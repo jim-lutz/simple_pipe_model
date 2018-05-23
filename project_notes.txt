@@ -313,4 +313,9 @@ https://plot.ly/~jlutz/11/
     
     added ave.GPM by test.segment to DT_data.5
     
-   
+2018-05-22
+    clean_data.3.R, clean_data.4.R, & clean_data.5.R
+    on 12PEXBareRawData2, 34PEXR47RawData2
+    
+    in addition to ave.GPM, maybe do start.GPM & end.GPM as well.       
+    think about adding starting & ending Reynolds number for each test.segment

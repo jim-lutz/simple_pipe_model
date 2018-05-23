@@ -103,14 +103,14 @@ if(nrow(DT_data.3[grepl("\\.",TestFlag) &
 
 # nominal pipe diameter
 # ===
-DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
-          list(timestamp, record, TestFlag)]
+# DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
+#           list(timestamp, record, TestFlag)]
 DT_data.3[grepl("[1-9]/[1-9]",TestFlag), 
           pipe.nom.diam := str_extract(TestFlag, "[1-9]/[1-9]")
           ]
-DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
-          list(timestamp, record, TestFlag, pipe.nom.diam)]
-DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)), by=pipe.nom.diam]
+# DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
+#           list(timestamp, record, TestFlag, pipe.nom.diam)]
+# DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)), by=pipe.nom.diam]
 
 # get the number of pipe.nom.diam
 n.pipe.nom.diam <- nrow(DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)), by=pipe.nom.diam])
@@ -139,11 +139,11 @@ rm(p.nom.dm)
 
 # pipe material, {PEX|CPVC|RigidCU}
 # ===
-DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag), 
-          list(n=length(record)), by=TestFlag]
-
-DT_data.3[grepl("FIXTURE",TestFlag),
-          list(timestamp, record, TestFlag)]
+# DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag), 
+#           list(n=length(record)), by=TestFlag]
+# 
+# DT_data.3[grepl("FIXTURE",TestFlag),
+#           list(timestamp, record, TestFlag)]
 #           timestamp record      TestFlag
 # 2009-02-22 15:05:29 242475   PEX FIXTURE
 
@@ -152,7 +152,7 @@ DT_data.3[TestFlag == 'PEX FIXTURE', TestFlag:= 'OTHER FIXTURE']
 
 DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag) & is.na(pipe.matl), 
           pipe.matl := str_match(TestFlag, "(PEX|CPVC|RigidCU)")[2]]
-DT_data.3[, list(n=length(record)), by=pipe.matl]
+# DT_data.3[, list(n=length(record)), by=pipe.matl]
 
 # get the number of pipe.matl
 n.pipe.matl <- nrow(DT_data.3[!is.na(pipe.matl), list(n=length(record)), by=pipe.matl])
@@ -181,14 +181,14 @@ rm(p.mtl)
 
 # insulation level
 # ===
-DT_data.3[grepl("BARE|R-5|R-4",TestFlag), 
-          list(n=length(record)), by=TestFlag]
+# DT_data.3[grepl("BARE|R-5|R-4",TestFlag), 
+#           list(n=length(record)), by=TestFlag]
 # there's some typos, R-4.6 instead of R-4.7
 DT_data.3[TestFlag=='R-4.6', TestFlag:= 'R-4.7']
 
 DT_data.3[grepl("BARE|R-5|R-4",TestFlag) & is.na(insul.level), 
           insul.level := str_match(TestFlag, "(BARE|R-5.2|R-4.7|R-5.5)")[2]]
-DT_data.3[, list(n=length(record)), by=insul.level]
+# DT_data.3[, list(n=length(record)), by=insul.level]
 
 # get the number of insulation levels
 n.insul.level <- nrow(DT_data.3[!is.na(insul.level), list(n=length(record)), by=insul.level])
@@ -241,7 +241,7 @@ DT_data.3[, segment := NULL]
 setorder(DT_data.3, record)
 
 # set the test.segment 
-# note this is not the same as test.num because 'TEST NN' is sometimes duplicate
+# note this is not the same as test.num because 'TEST NN' is sometimes duplicated
 # get the max & mins
 m <- DT_data.3[, list(max.start.num = max(start.num, na.rm = TRUE),
                       min.end.num   = min(end.num, na.rm = TRUE))]
@@ -252,8 +252,8 @@ DT_data.3[(start.num + end.num)==(m$max.start.num+m$min.end.num),
 rm(m)
 
 # look at results
-DT_data.3[,list(n=length(record)
-                ), by=c("start.num","test.segment")]
+# DT_data.3[,list(n=length(record)
+#                 ), by=c("start.num","test.segment")]
 # seems OK, test this?
 
 # extend test.segment one record before START
@@ -282,16 +282,16 @@ if( nrow(
 # get the 'TEST nn' for each test.segment
 DT_TEST_nn <- unique(DT_data.3[grepl("TEST ",TestFlag), list(TestFlag, test.segment)])
 setkey(DT_TEST_nn, test.segment)
-str(DT_TEST_nn)
+# str(DT_TEST_nn)
 
 # now merge DT_TEST_nn onto DT_data.3 as test.num for each test.segment
-str(DT_data.3)
+# str(DT_data.3)
 setkey(DT_data.3,record)
 DT_data.4 <- merge(DT_data.3[],DT_TEST_nn[], by="test.segment", all.x = TRUE)
 rm(DT_TEST_nn)
 
 # clean up
-names(DT_data.4)
+# names(DT_data.4)
 
 # clean up variables
 DT_data.4[, `:=` (test.num   = TestFlag.y,
@@ -311,15 +311,16 @@ setnames(DT_data.4,
 # ===
 # do this by test.segment
 DT_data.4[,cold.warm := NA]
-DT_data.4[grepl("COLD|WARM",TestFlag), 
-          list(n=length(record)), by=TestFlag]
+# DT_data.4[grepl("COLD|WARM",TestFlag), 
+#           list(n=length(record)), by=TestFlag]
 DT_data.4[is.na(cold.warm) & grepl("COLD|WARM",TestFlag), 
           cold.warm := TestFlag ]
 
 # issue with test.segment == 25
-View(
-DT_data.4[test.segment==25, list(timestamp, record, TestFlag)]
-)
+# View(
+# DT_data.4[test.segment==25, list(timestamp, record, TestFlag)]
+# )
+
 # missed COLD, move 'TEST 1' up one record & insert 'COLD'
 DT_data.4[record==286933, TestFlag:='TEST 1']
 DT_data.4[record==286934, `:=` (TestFlag  ='COLD',
@@ -352,18 +353,18 @@ rm(ts)
 
 
 # compare number test.segments
-DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")]
-DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")][order(-nrec)]
+# DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")]
+# DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")][order(-nrec)]
 
-DT_data.4[!is.na(test.segment), 
-          list(start.ts  = min(timestamp), 
-               start.rec = min(record),
-               nrec      = length(record),
-               utest.num = unique(test.num),
-               unom.GPM  = unique(nominal.GPM),
-               unom.cw   = unique(cold.warm)
-               ), by=test.segment][order(unom.GPM,unom.cw)]
-
+# DT_data.4[!is.na(test.segment), 
+#           list(start.ts  = min(timestamp), 
+#                start.rec = min(record),
+#                nrec      = length(record),
+#                utest.num = unique(test.num),
+#                unom.GPM  = unique(nominal.GPM),
+#                unom.cw   = unique(cold.warm)
+#                ), by=test.segment][order(unom.GPM,unom.cw)]
+# 
 
 # find other.comments
 DT_data.4[!is.na(TestFlag) & 

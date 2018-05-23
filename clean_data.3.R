@@ -29,20 +29,28 @@ wd_data_out   = paste0(wd_data, "4/")
 l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 
 # loop through all the files
-# for(f in l_Rdata) {
+for(f in l_Rdata) { # turn off for testing
   
   # this is for testing on just one *.Rdata data.table
-  #f = l_Rdata[1]   # 12PEXBareRawData2.Rdata
-  f = l_Rdata[6]   # 34PEXR47RawData2.Rdata
+  # f = l_Rdata[1]   # 12PEXBareRawData2.Rdata
+  # f = l_Rdata[6]   # 34PEXR47RawData2.Rdata
 
   # bare filename w/o extension
   bfname = str_remove(f,".Rdata")
   
-  # load a data.table DT_data.3
+  # build file name of the findNfixTF.R file to source
+  FNFTF.fname.R <- paste0(wd,"/findNfixTF.",bfname,".R")
+  
+  # make sure the findNfixTF.R file exists
+  if( !file.exists(FNFTF.fname.R) ) {next}
+  
+  # STOP  
+  
+  # load data.table DT_data.3
   load(file = paste0(wd_data_in,f) )
   
   # look at DT_data.3  
-  DT_data.3
+  # DT_data.3
 
   # add empty columns to DT_data.3, used for debugging
   DT_data.3[, `:=` (pipe.matl     = as.character(),
@@ -62,12 +70,11 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 
         # add dash and decimal
     finsul.level <- paste0(fl[1],"-",fl[2],".",fl[3])
-  }
+    }
   
-  # build file name of the findNfixTF.R file to source
-  FNFTF.fname.R <- paste0(wd,"/findNfixTF.",bfname,".R")
-
-  STOP  
+  # report calling the findNfixTF.R file
+  cat("now sourcing ",FNFTF.fname.R, "\n")
+  
   # source the findNfixTF.R file
   source(file = FNFTF.fname.R )
   
@@ -77,5 +84,5 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # remove data.tables before next spreadsheet
   rm(DT_data.3, DT_data.4)
 
-# }  loop turned off
+}  # loop turned off
   

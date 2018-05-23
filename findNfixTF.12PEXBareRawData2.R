@@ -1,7 +1,6 @@
 # findNfixTF.12PEXBareRawData2.R 
 # this is code find and fix anomalies in TestFlag in DT_data.3 for 12PEXBareRawData2
 # it is sourced by clean_data.3.R
-# DT_data.4 should then pass all the subsequent tests in clean_data.3.R
 
 # report if there are any duplicate timestamps
 # ===
@@ -119,14 +118,14 @@ if(nrow(DT_data.3[grepl("\\.",TestFlag), list(timestamp, record, TestFlag)])>0) 
 
 # nominal pipe diameter
 # ===
-DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
-          list(timestamp, record, TestFlag)]
+# DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
+#           list(timestamp, record, TestFlag)]
 DT_data.3[grepl("[1-9]/[1-9]",TestFlag), 
           pipe.nom.diam := str_extract(TestFlag, "[1-9]/[1-9]")
           ]
-DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
-          list(timestamp, record, TestFlag, pipe.nom.diam)]
-DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)), by=pipe.nom.diam]
+# DT_data.3[grepl("[1-9]/[1-9]",TestFlag),
+#           list(timestamp, record, TestFlag, pipe.nom.diam)]
+# DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)), by=pipe.nom.diam]
 
 # get the number of pipe.nom.diam
 n.pipe.nom.diam <- nrow(DT_data.3[!is.na(pipe.nom.diam), list(n=length(record)), by=pipe.nom.diam])
@@ -155,11 +154,11 @@ rm(p.nom.dm)
 
 # pipe material, {PEX|CPVC|RigidCU}
 # ===
-DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag), 
-          list(n=length(record)), by=TestFlag]
+# DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag), 
+#           list(n=length(record)), by=TestFlag]
 DT_data.3[grepl("PEX|CPVC|RigidCU",TestFlag) & is.na(pipe.matl), 
           pipe.matl := str_match(TestFlag, "(PEX|CPVC|RigidCU)")[2]]
-DT_data.3[, list(n=length(record)), by=pipe.matl]
+# DT_data.3[, list(n=length(record)), by=pipe.matl]
 
 # get the number of pipe.matl
 n.pipe.matl <- nrow(DT_data.3[!is.na(pipe.matl), list(n=length(record)), by=pipe.matl])
@@ -188,11 +187,11 @@ rm(p.mtl)
 
 # insulation level
 # ===
-DT_data.3[grepl("BARE|R52|R47|R55",TestFlag), 
-          list(n=length(record)), by=TestFlag]
+# DT_data.3[grepl("BARE|R52|R47|R55",TestFlag), 
+#           list(n=length(record)), by=TestFlag]
 DT_data.3[grepl("BARE|R52|R47|R55",TestFlag) & is.na(insul.level), 
           insul.level := str_match(TestFlag, "(BARE|R52|R47|R55)")[2]]
-DT_data.3[, list(n=length(record)), by=insul.level]
+# DT_data.3[, list(n=length(record)), by=insul.level]
 
 # get the number of insulation levels
 n.insul.level <- nrow(DT_data.3[!is.na(insul.level), list(n=length(record)), by=insul.level])
@@ -249,7 +248,7 @@ DT_data.3[, segment := NULL]
 setorder(DT_data.3, record)
 
 # set the test.segment 
-# note this is not the same as test.num because 'TEST NN' is sometimes duplicate
+# note this is not the same as test.num because 'TEST NN' is sometimes duplicated
 # get the max & mins
 m <- DT_data.3[, list(max.start.num = max(start.num, na.rm = TRUE),
                       min.end.num   = min(end.num, na.rm = TRUE))]
@@ -260,8 +259,8 @@ DT_data.3[(start.num + end.num)==(m$max.start.num+m$min.end.num),
 rm(m)
 
 # look at results
-DT_data.3[,list(n=length(record)
-                ), by=c("start.num","test.segment")]
+# DT_data.3[,list(n=length(record)
+#                 ), by=c("start.num","test.segment")]
 # seems OK, test this?
 
 # extend test.segment one record before START
@@ -290,16 +289,16 @@ if( nrow(
 # get the 'TEST nn' for each test.segment
 DT_TEST_nn <- unique(DT_data.3[grepl("TEST ",TestFlag), list(TestFlag, test.segment)])
 setkey(DT_TEST_nn, test.segment)
-str(DT_TEST_nn)
+# str(DT_TEST_nn)
 
 # now merge DT_TEST_nn onto DT_data.3 as test.num for each test.segment
-str(DT_data.3)
+# str(DT_data.3)
 setkey(DT_data.3,record)
 DT_data.4 <- merge(DT_data.3[],DT_TEST_nn[], by="test.segment", all.x = TRUE)
 rm(DT_TEST_nn)
 
 # clean up
-names(DT_data.4)
+# names(DT_data.4)
 
 # clean up variables
 DT_data.4[, `:=` (test.num   = TestFlag.y,
@@ -312,15 +311,15 @@ setnames(DT_data.4,
          new = c("TestFlag" )
 )
 
-STOP
+# STOP
 
 
 # COLD WARM
 # ===
 # do this by test.segment
 DT_data.4[,cold.warm := NA]
-DT_data.4[grepl("COLD|WARM",TestFlag), 
-          list(n=length(record)), by=TestFlag]
+# DT_data.4[grepl("COLD|WARM",TestFlag), 
+#           list(n=length(record)), by=TestFlag]
 DT_data.4[is.na(cold.warm) & grepl("COLD|WARM",TestFlag), 
           cold.warm := TestFlag ]
 
@@ -351,17 +350,17 @@ rm(ts)
 
 
 # compare number test.segments
-DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")]
-DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")][order(-nrec)]
+# DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")]
+# DT_data.4[, list(nrec = length(record)), by=c("test.segment","test.num")][order(-nrec)]
 
-DT_data.4[!is.na(test.segment), 
-          list(start.ts  = min(timestamp), 
-               start.rec = min(record),
-               nrec      = length(record),
-               utest.num = unique(test.num),
-               unom.GPM  = unique(nominal.GPM),
-               unom.cw   = unique(cold.warm)
-               ), by=test.segment][order(unom.GPM,unom.cw)]
+# DT_data.4[!is.na(test.segment), 
+#           list(start.ts  = min(timestamp), 
+#                start.rec = min(record),
+#                nrec      = length(record),
+#                utest.num = unique(test.num),
+#                unom.GPM  = unique(nominal.GPM),
+#                unom.cw   = unique(cold.warm)
+#                ), by=test.segment][order(unom.GPM,unom.cw)]
 
 
 # find other.comments
@@ -375,6 +374,6 @@ DT_data.4[!is.na(TestFlag) &
           other.comment := TestFlag]
 
 # look at other.comments
-DT_data.4[,list(nrec=length(record)),by=other.comment]
+# DT_data.4[,list(nrec=length(record)),by=other.comment]
 # a few typos, but OK
 
