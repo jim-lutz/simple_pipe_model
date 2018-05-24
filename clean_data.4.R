@@ -170,7 +170,21 @@ for(f in l_Rdata) {
   rm(drop_pulse_names, pulse_names,lagcols, leadcols)
   
   # merge DT_pulses onto DT_data.5
-  DT_data.5 <-  merge(DT_data.5,DT_pulses, by=c("test.segment","record"), all.x = TRUE )
+  DT_data.5 <-  merge(DT_data.5,DT_pulses[ , list(pulse_smooth, test.segment, record)], 
+                      by=c("test.segment","record"), all.x = TRUE )
+  
+  # calc smoothed GPM
+  DT_data.5[ , GPM.smooth := pulse_smooth * gal_pls * 60]
+  
+  # look at the GPM.smooth
+  ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36])+
+    geom_path(aes(x=mins.zero, y= GPM.smooth, color=as.factor(test.segment)))+
+    ggtitle( paste0('smoothed flow by test.segment in ', bfname) )+
+    scale_x_continuous(name = "duration of draw (min)")+ 
+    scale_y_continuous(name = "smoothed flow (GPM)",limits = c(0,5))
+  
+  ggsave(filename = paste0(bfname,"smoothedflow.png"), path=wd_charts)
+  
   
   
   
@@ -178,7 +192,6 @@ for(f in l_Rdata) {
   
   # add number of records by test.segment
   DT_data.5[!is.na(test.segment), nrec:=length(record), by=test.segment ]
-  
   
   
   

@@ -342,3 +342,8 @@ https://plot.ly/~jlutz/11/
     
     do this in clean_data.4.R
     
+    rename ave.GPM to GPM.ave
+    
+    GPM.smooth = pulse_smooth (pulse/sec) * gal_pls * 60 (sec/min) 
+    
+    
