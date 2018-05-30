@@ -183,10 +183,15 @@ for(f in l_Rdata) {
     geom_path(aes(x=mins.zero, y= TC6_AVPV, color=as.factor(test.segment)))+
     ggtitle( paste0('TC6_AVPV by test.segment in ', bfname) )+
     scale_x_continuous(name = "duration of draw (min)")+ 
-    scale_y_continuous(name = "actual volume to pipe volume") #,limits = c(0,5))
+    scale_y_continuous(name = "actual volume to pipe volume") 
   # seems OK
   
-  names(DT_data.5)
+
+  # add number of records by test.segment
+  DT_data.5[!is.na(test.segment), nrec:=length(record), by=test.segment ]
+  
+  
+    names(DT_data.5)
   
   # calc fDeltaT
   # list of TCn names, these are the names of the columns that contain TC temperatures
@@ -196,11 +201,27 @@ for(f in l_Rdata) {
   TC_T.end.names <- paste0(TC.names, "_T.end")
   
   # calc TC6_T.end, average TC temp for last minute
-  DT_data.5[!is.na(test.segment), ]
+  DT_data.5[!is.na(test.segment), 
+            list(TC6_T.end = mean(TC6[-60:-1]),
+                 TC6_T.end.max = max(TC6[-60:-1], na.rm = TRUE),
+                 TC6_T.end.min = min(TC6[-60:-1], na.rm = TRUE),
+                 nrec=unique(nrec)),
+            by=test.segment
+            ]
+  
+  # look at temperatures for TC2
+  ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
+    geom_path(aes(x=mins.zero, y= TC2, color=as.factor(test.segment))) +
+    ggtitle( paste0('TC2 by test.segment in ', bfname) ) +
+    scale_x_continuous(name = "duration of draw (min)") + 
+    scale_y_continuous(name = "temperature" ) + # ,limits = c(125,140))
+    facet_wrap(~test.segment)
+  
+  # ggsave(filename = paste0(bfname,"TC6_top.png"), path=wd_charts,
+  #        width = 19, height = 10 )
   
   
-  # add number of records by test.segment
-  DT_data.5[!is.na(test.segment), nrec:=length(record), by=test.segment ]
+  
   
   
   # save DT_data.5 as .Rdata

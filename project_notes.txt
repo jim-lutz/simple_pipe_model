@@ -378,3 +378,7 @@ https://plot.ly/~jlutz/11/
         
     do this in clean_data.4.R
     
+    for purposes on T.end use the first minute (after T>100) when the temperature
+    rises less than 1 deg in 1 minute
+    
+    
