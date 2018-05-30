@@ -221,16 +221,39 @@ for(f in l_Rdata) {
              by=test.segment]
   
   # look at temperatures for TC2 & TC2_1min
-  ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
-    geom_path(aes(x=mins.zero, y= TC2, color=as.factor(test.segment))) +
-    geom_path(aes(x=mins.zero, y= TC2_1min, color=as.factor(test.segment))) +
-    ggtitle( paste0('TC2 & TC2_1min by test.segment in ', bfname) ) +
-    scale_x_continuous(name = "duration of draw (min)") +
-    scale_y_continuous(name = "temperature" ) + # ,limits = c(125,140))
-    facet_wrap(~test.segment)
-  # this works except for test segments less than one minute long
+  # ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
+  #   geom_path(aes(x=mins.zero, y= TC2, color=as.factor(test.segment))) +
+  #   geom_path(aes(x=mins.zero, y= TC2_1min, color=as.factor(test.segment))) +
+  #   ggtitle( paste0('TC2 & TC2_1min by test.segment in ', bfname) ) +
+  #   scale_x_continuous(name = "duration of draw (min)") +
+  #   scale_y_continuous(name = "temperature" ) + # ,limits = c(125,140))
+  #   facet_wrap(~test.segment)
+  # # this works except for test segments less than one minute long
 
+  # find TCn_1mindelta
+  # list of TCn_1mindelta column names
+  TC_1mindelta.names <- paste0(TC.names, "_1mindelta")
   
+  # calculate the TC delta Ts for one minute ago
+  DT_data.5[ !is.na(test.segment), 
+             (TC_1mindelta.names) := .SD - shift(.SD, n=60, type="lag"),
+             .SDcols = TC.names,
+             by=test.segment]
+  
+  # look at temperatures for TC2_1mindelta
+  # ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
+  #   geom_path(aes(x=mins.zero, y= TC2_1mindelta, color=as.factor(test.segment))) +
+  #   ggtitle( paste0('TC2_1mindelta by test.segment in ', bfname) ) +
+  #   scale_x_continuous(name = "duration of draw (min)") +
+  #   scale_y_continuous(name = "delta temperature from 1 minute ago" ,limits = c(-5,5)) + #
+  #   facet_wrap(~test.segment)
+  # # this works except for test segments less than one minute long
+  
+  
+  
+  
+  
+
   
   
   # save DT_data.5 as .Rdata
