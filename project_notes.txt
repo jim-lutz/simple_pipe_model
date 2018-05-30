@@ -346,4 +346,35 @@ https://plot.ly/~jlutz/11/
     
     GPM.smooth = pulse_smooth (pulse/sec) * gal_pls * 60 (sec/min) 
     
+2018-05-24
+
+    AVPV is ratio of actual delivered volume (cumulative flow) at a certain point over time, to total pipe volume up to that point. It is a way to normalize flow
+    
+    fDeltaT is fraction of temperature difference between final and initial temperature
+    initial temperature is temperature of water in pipe at start of draw. Tpipe_start
+    final temperature (at a point along the pipe) is temperature at point when it reaches
+    steady state.  Taken to be dT/dt <=?  maybe 0.5 degF over 30 seconds?
+    
+    both AVPV and fDeltaT are calculated at every TC for every second
+    
+    Other calculations:
+    
+    t.rise time that T starts to rise, dT/dt > 1.0 degF / sec?
+    T.diff = T_i - T_i-1 for every TC
+    first T.diff >= 1.0 degF
+    for every TC, every test.segment
+    
+    Reynolds number, every second, every TC, every test.segment
+    function of velocity (flow), pipe diam & viscosity. Viscosity is function of temp
+    see if mass package in R provides this.
+      
+      
+2018-05-30
+    work on AVPV & fDeltaT
+    
+    AV = cumulative gallons at each TC for every second. Will have to use smoothed flow.
+    reexamine smoothed flow. See if can find any good functions in R.
+    useing lowess(pulse.ave)$y
+        
+    do this in clean_data.4.R
     

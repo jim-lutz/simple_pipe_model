@@ -133,24 +133,30 @@ for(f in l_Rdata) {
             
   # merge ave.GPM onto DT_data.5
   DT_data.5 <-  merge(DT_data.5,DT_ave.GPM, by="test.segment", all.x = TRUE )
-  
-  # calc running average pulses per second, averaged over 10 records
-  # add 10 (1:9) lag and lead columns for pulse1 and pulse2
-  cols = c("pulse1", "pulse2")
-  
-  # 1:9 leading pulse1 & pulse2
-  leadcols = c( paste0( cols[1], "_lead",1:9 ),
-                paste0( cols[2], "_lead",1:9 ))
-  DT_data.5[, (leadcols) := shift(.SD, 1:9, NA, "lead"), .SDcols=cols, by=test.segment]
-  
-  # 1:9 lagging pulse1 & pulse2
-  lagcols = c( paste0( cols[1], "_lag",1:9 ),
-                paste0( cols[2], "_lag",1:9 ))
-  DT_data.5[, (lagcols) := shift(.SD, 1:9, NA, "lag"), .SDcols=cols, by=test.segment]
-  
-  # pulse names
-  pulse_names <- grep("pulse",names(DT_data.5), value = TRUE )
 
+  # calc smoothed average pulses per second using lowess function with default settings
+  # average pulses
+  DT_data.5[, pulse.ave := (pulse1 + pulse2)/2]
+  
+  # confirm it's working appropriately
+  DT_data.5[, list(pulse1,pulse2,pulse.ave)]
+  
+  # lowess by test.segment
+  DT_data.5[ , pulse.smooth := lowess(pulse.ave)$y, by=test.segment]
+
+  # confirm it's working appropriately
+  DT_data.5[test.segment==1, list(pulse1,pulse2,pulse.ave, pulse.smooth)]
+  
+  # not what I expected
+  # try a test
+  pulse.ave.test <- DT_data.5[ test.segment==1 , pulse.ave]
+  
+  pulse.smooth <- lowess(pulse.ave.test)
+  str(pulse.smooth)
+  qplot(x=1:length(pulse.ave.test), y=pulse.ave.test)
+  qplot(x=1:length(pulse.ave.test), y=pulse.smooth$y)
+  # that looks good. it's $y of lowess that I'm after
+  
   # DT_pulses
   DT_pulses <-
   DT_data.5[!is.na(test.segment),
