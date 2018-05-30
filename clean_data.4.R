@@ -146,41 +146,11 @@ for(f in l_Rdata) {
 
   # confirm it's working appropriately
   DT_data.5[test.segment==1, list(pulse1,pulse2,pulse.ave, pulse.smooth)]
-  
-  # not what I expected
-  # try a test
-  pulse.ave.test <- DT_data.5[ test.segment==1 , pulse.ave]
-  
-  pulse.smooth <- lowess(pulse.ave.test)
-  str(pulse.smooth)
-  qplot(x=1:length(pulse.ave.test), y=pulse.ave.test)
-  qplot(x=1:length(pulse.ave.test), y=pulse.smooth$y)
   # that looks good. it's $y of lowess that I'm after
-  
-  # DT_pulses
-  DT_pulses <-
-  DT_data.5[!is.na(test.segment),
-              .SD,
-              by=c("test.segment","record"),
-              .SDcols=pulse_names]
-  
-  # calculate running average pulses
-  DT_pulses[, pulse_smooth := rowMeans(.SD, na.rm = TRUE), 
-                 .SDcols=pulse_names
-                 ]
-
-  # drop the all the pulses except pulse1, pulse2, pulse_smooth
-  drop_pulse_names  <-  grep("_l", pulse_names, value = TRUE)
-  DT_pulses[, drop_pulse_names[]:=NULL ]
-  DT_data.5[, drop_pulse_names[]:=NULL ]
-  rm(drop_pulse_names, pulse_names,lagcols, leadcols)
-  
-  # merge DT_pulses onto DT_data.5
-  DT_data.5 <-  merge(DT_data.5,DT_pulses[ , list(pulse_smooth, test.segment, record)], 
-                      by=c("test.segment","record"), all.x = TRUE )
-  
+  qplot(data=DT_data.5[test.segment==1], x=1:length(pulse.smooth), y=pulse.smooth)
+    
   # calc smoothed GPM
-  DT_data.5[ , GPM.smooth := pulse_smooth * gal_pls * 60]
+  DT_data.5[ , GPM.smooth := pulse.smooth * gal_pls * 60]
   
   # look at the GPM.smooth
   ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36])+
@@ -191,29 +161,48 @@ for(f in l_Rdata) {
   
   ggsave(filename = paste0(bfname,"smoothedflow.png"), path=wd_charts)
   
+  # calc actual volume, cumulative sum of the GPM per segment
+  # this assumes one second per record, with no missing records
+  DT_data.5[ , AV:=cumsum(GPM.smooth)/60, by=test.segment]
   
+  # calc AVPV at each TC
+  # list of TC_gal names, these are the names of the columns that contain PV
+  TC_gal.names <- grep("TC[0-9]+_gal", names(DT_data.5), value = TRUE)
   
+  # list of TCn_AVPV column names
+  TC_AVPV.names <- str_replace(TC_gal.names, "_gal", "_AVPV")
   
+  # calc AVPV by TC
+  DT_data.5[ !is.na(test.segment), 
+             (TC_AVPV.names) := AV/.SD,
+             .SDcols = TC_gal.names,
+             by=test.segment]
+  
+  # see what AVPV looks like for TC2 & TC6
+  ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36])+
+    geom_path(aes(x=mins.zero, y= TC6_AVPV, color=as.factor(test.segment)))+
+    ggtitle( paste0('TC6_AVPV by test.segment in ', bfname) )+
+    scale_x_continuous(name = "duration of draw (min)")+ 
+    scale_y_continuous(name = "actual volume to pipe volume") #,limits = c(0,5))
+  # seems OK
+  
+  names(DT_data.5)
+  
+  # calc fDeltaT
+  # list of TCn names, these are the names of the columns that contain TC temperatures
+  TC.names <- grep("TC[0-9]+$", names(DT_data.5), value = TRUE)
+  
+  # list of TCn_T.end column names
+  TC_T.end.names <- paste0(TC.names, "_T.end")
+  
+  # calc TC6_T.end, average TC temp for last minute
+  DT_data.5[!is.na(test.segment), ]
   
   
   # add number of records by test.segment
   DT_data.5[!is.na(test.segment), nrec:=length(record), by=test.segment ]
   
   
-  
-  
-  # add plot.OK = TRUE when nrec>500
-  # DT_data.5[nrec>500, plot.OK:=TRUE, by=test.segment ]
-  
-  # see what that did
-  DT_data.5[!is.na(test.segment),
-            list(nrec    = unique(nrec),
-                 nom.GPM = unique(nominal.GPM), 
-                 c.w     = unique(cold.warm), 
-                 Tstart  = unique(Tpipe.start) 
-            ),
-            by=test.segment][order(nom.GPM, Tstart)]
-
   # save DT_data.5 as .Rdata
   save(DT_data.5, file = paste0(wd_data_out, f))
 
