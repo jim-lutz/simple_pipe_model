@@ -93,13 +93,6 @@ for(f in l_Rdata) {
                     mins.zero = unique(mins.zero)),
              by=test.segment]
 
-  # look at the first 3 in each test.segment  
-  DT_data.5[
-    DT_data.5[!is.na(test.segment),.(index=.I[1:3]), by=test.segment]$index, 
-        # this gives the row numbers of the first 3 rows by test.segment
-    list(timestamp, time.zero, mins.zero), 
-    by=test.segment]
-
   # calc Tair.ave by test.segment
   DT_data.5[!is.na(test.segment), Tair.ave := (mean(TairNear)+mean(TairFar))/2,
             by=test.segment]
@@ -117,7 +110,7 @@ for(f in l_Rdata) {
                  .SDcols=TCs[3:length(TCs)]
                  ]
   
-  # drop the TCs
+  # drop the TCs from Tpipe.start
   DT_Tpipe.start[, TCs[3:length(TCs)]:=NULL ]
   
   # merge Tpipe.start onto DT_data.5
@@ -134,6 +127,9 @@ for(f in l_Rdata) {
   # merge ave.GPM onto DT_data.5
   DT_data.5 <-  merge(DT_data.5,DT_ave.GPM, by="test.segment", all.x = TRUE )
 
+  # remove unneeded data.tables
+  rm(DT_ave.GPM, DT_gal, DT_Tpipe.start)
+  
   # calc smoothed average pulses per second using lowess function with default settings
   # average pulses
   DT_data.5[, pulse.ave := (pulse1 + pulse2)/2]
@@ -179,24 +175,21 @@ for(f in l_Rdata) {
              by=test.segment]
   
   # see what AVPV looks like for TC2 & TC6
-  ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36])+
-    geom_path(aes(x=mins.zero, y= TC6_AVPV, color=as.factor(test.segment)))+
-    ggtitle( paste0('TC6_AVPV by test.segment in ', bfname) )+
-    scale_x_continuous(name = "duration of draw (min)")+ 
-    scale_y_continuous(name = "actual volume to pipe volume") 
+  # ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36])+
+  #   geom_path(aes(x=mins.zero, y= TC6_AVPV, color=as.factor(test.segment)))+
+  #   ggtitle( paste0('TC6_AVPV by test.segment in ', bfname) )+
+  #   scale_x_continuous(name = "duration of draw (min)")+ 
+  #   scale_y_continuous(name = "actual volume to pipe volume") 
   # seems OK
   
-
   # add number of records by test.segment
   DT_data.5[!is.na(test.segment), nrec:=length(record), by=test.segment ]
   
-  
-  names(DT_data.5)
-  # look at temperatures for TC2
+  # look at temperatures for TC6
   # ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
-  #   geom_path(aes(x=mins.zero, y= TC2, color=as.factor(test.segment))) +
-  #   ggtitle( paste0('TC2 by test.segment in ', bfname) ) +
-  #   scale_x_continuous(name = "duration of draw (min)") + 
+  #   geom_path(aes(x=mins.zero, y= TC6, color=as.factor(test.segment))) +
+  #   ggtitle( paste0('TC6 by test.segment in ', bfname) ) +
+  #   scale_x_continuous(name = "duration of draw (min)") +
   #   scale_y_continuous(name = "temperature" ) + # ,limits = c(125,140))
   #   facet_wrap(~test.segment)
   # 
@@ -234,7 +227,7 @@ for(f in l_Rdata) {
   # list of TCn_1mindelta column names
   TC_1mindelta.names <- paste0(TC.names, "_1mindelta")
   
-  # calculate the TC delta Ts for one minute ago
+  # calculate the TC delta Ts for one minute ago, this almost a derivative
   DT_data.5[ !is.na(test.segment), 
              (TC_1mindelta.names) := .SD - shift(.SD, n=60, type="lag"),
              .SDcols = TC.names,
@@ -246,12 +239,40 @@ for(f in l_Rdata) {
   #   ggtitle( paste0('TC2_1mindelta by test.segment in ', bfname) ) +
   #   scale_x_continuous(name = "duration of draw (min)") +
   #   scale_y_continuous(name = "delta temperature from 1 minute ago" ,limits = c(-5,5)) + #
-  #   facet_wrap(~test.segment)
-  # # this works except for test segments less than one minute long
+  #   facet_wrap(~test.segment) 
+  # this works except for test segments less than one minute long
   
+  # set a end flag when TCn_1mindelta < 0.5 deg F 
+  # list of TCn_flag.end column names
+  TC_flag.end.names <- paste0(TC.names, "_flag.end")
   
+  # remove TC_flag.end.names columns
+  DT_data.5[, (TC_flag.end.names) := NULL]
   
+  # # set end flag to TC_1mindelta
+  # DT_data.5[ !is.na(test.segment), 
+  #            (TC_flag.end.names) := .SD ,
+  #            .SDcols = TC_1mindelta.names,
+  #            by=test.segment]
   
+  # set end flag to logical
+  # loop through TCs starting with TC2
+  for(tc in 2:length(TC.names)) {
+    # create commands for each TC
+    flag.end.false <- paste0("DT_data.5[", TC.names[tc], " > 100 & ", TC_1mindelta.names[tc]," >= 0.5, ",TC_flag.end.names[tc]," := 0]")
+    flag.end.true  <- paste0("DT_data.5[", TC.names[tc], " > 100 & ", TC_1mindelta.names[tc]," <  0.5, ",TC_flag.end.names[tc]," := 1]")
+    
+    # evaluate the commands
+    eval(parse(text=flag.end.false))
+    eval(parse(text=flag.end.true))
+    }
+  
+  DT_data.5[test.segment==35 & TC6 > 100,
+            list(timestamp, TC6, TC6_1min, TC6_1mindelta, TC6_flag.end)][280:300]
+  
+  names(DT_data.5)
+  
+  # 
   
 
   

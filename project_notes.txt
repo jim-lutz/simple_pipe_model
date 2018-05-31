@@ -381,4 +381,7 @@ https://plot.ly/~jlutz/11/
     for purposes on T.end use the first minute (after T>100) when the temperature
     rises less than 1 deg in 1 minute
     
-    
+2018-05-31
+  calc actual volume, cumulative sum of the GPM per segment
+  this assumes one second per record, with no missing records
+  should confirm this    
