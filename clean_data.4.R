@@ -143,19 +143,19 @@ for(f in l_Rdata) {
   # confirm it's working appropriately
   DT_data.5[test.segment==1, list(pulse1,pulse2,pulse.ave, pulse.smooth)]
   # that looks good. it's $y of lowess that I'm after
-  qplot(data=DT_data.5[test.segment==1], x=1:length(pulse.smooth), y=pulse.smooth)
+  qplot(data=DT_data.5[test.segment==35], x=1:length(pulse.smooth), y=pulse.smooth)
     
   # calc smoothed GPM
   DT_data.5[ , GPM.smooth := pulse.smooth * gal_pls * 60]
   
   # look at the GPM.smooth
-  ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36])+
-    geom_path(aes(x=mins.zero, y= GPM.smooth, color=as.factor(test.segment)))+
-    ggtitle( paste0('smoothed flow by test.segment in ', bfname) )+
-    scale_x_continuous(name = "duration of draw (min)")+ 
-    scale_y_continuous(name = "smoothed flow (GPM)",limits = c(0,5))
+  # ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36])+
+  #   geom_path(aes(x=mins.zero, y= GPM.smooth, color=as.factor(test.segment)))+
+  #   ggtitle( paste0('smoothed flow by test.segment in ', bfname) )+
+  #   scale_x_continuous(name = "duration of draw (min)")+ 
+  #   scale_y_continuous(name = "smoothed flow (GPM)",limits = c(0,5))
   
-  ggsave(filename = paste0(bfname,"smoothedflow.png"), path=wd_charts)
+  # ggsave(filename = paste0(bfname,"smoothedflow.png"), path=wd_charts)
   
   # calc actual volume, cumulative sum of the GPM per segment
   # this assumes one second per record, with no missing records
@@ -178,8 +178,8 @@ for(f in l_Rdata) {
   # ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36])+
   #   geom_path(aes(x=mins.zero, y= TC6_AVPV, color=as.factor(test.segment)))+
   #   ggtitle( paste0('TC6_AVPV by test.segment in ', bfname) )+
-  #   scale_x_continuous(name = "duration of draw (min)")+ 
-  #   scale_y_continuous(name = "actual volume to pipe volume") 
+  #   scale_x_continuous(name = "duration of draw (min)")+
+  #   scale_y_continuous(name = "actual volume to pipe volume")
   # seems OK
   
   # add number of records by test.segment
@@ -198,19 +198,17 @@ for(f in l_Rdata) {
   
     
   # calc fDeltaT
-  # list of TCn names, these are the names of the columns that contain TC temperatures
-  TC.names <- grep("TC[0-9]+$", names(DT_data.5), value = TRUE)
-  
+
   # list of TCn_1min column names
-  TC_1min.names <- paste0(TC.names, "_1min")
+  TC_1min.names <- paste0(TCs, "_1min")
   
   # list of TCn_T.end column names
-  TC_T.end.names <- paste0(TC.names, "_T.end")
+  TC_T.end.names <- paste0(TCs, "_T.end")
   
   # calculate the TCs for one minute ago
   DT_data.5[ !is.na(test.segment), 
              (TC_1min.names) := shift(.SD, n=60, type="lag"),
-             .SDcols = TC.names,
+             .SDcols = TCs,
              by=test.segment]
   
   # look at temperatures for TC2 & TC2_1min
@@ -225,12 +223,12 @@ for(f in l_Rdata) {
 
   # find TCn_1mindelta
   # list of TCn_1mindelta column names
-  TC_1mindelta.names <- paste0(TC.names, "_1mindelta")
+  TC_1mindelta.names <- paste0(TCs, "_1mindelta")
   
   # calculate the TC delta Ts for one minute ago, this almost a derivative
   DT_data.5[ !is.na(test.segment), 
              (TC_1mindelta.names) := .SD - shift(.SD, n=60, type="lag"),
-             .SDcols = TC.names,
+             .SDcols = TCs,
              by=test.segment]
   
   # look at temperatures for TC2_1mindelta
@@ -239,30 +237,24 @@ for(f in l_Rdata) {
   #   ggtitle( paste0('TC2_1mindelta by test.segment in ', bfname) ) +
   #   scale_x_continuous(name = "duration of draw (min)") +
   #   scale_y_continuous(name = "delta temperature from 1 minute ago" ,limits = c(-5,5)) + #
-  #   facet_wrap(~test.segment) 
+  #   facet_wrap(~test.segment)
   # this works except for test segments less than one minute long
   
   # set a end flag when TCn_1mindelta < 0.5 deg F 
   # list of TCn_flag.end column names
-  TC_flag.end.names <- paste0(TC.names, "_flag.end")
+  TC_flag.end.names <- paste0(TCs, "_flag.end")
   
-  # remove TC_flag.end.names columns
+  # remove TC_flag.end.names columns for debugging
   DT_data.5[, (TC_flag.end.names) := NULL]
-  
-  # # set end flag to TC_1mindelta
-  # DT_data.5[ !is.na(test.segment), 
-  #            (TC_flag.end.names) := .SD ,
-  #            .SDcols = TC_1mindelta.names,
-  #            by=test.segment]
   
   # set end flag to logical
   # loop through TCs starting with TC2
-  for(tc in 2:length(TC.names)) {
+  for(tc in 2:length(TCs)) {
     # create commands for each TC
-    flag.end.false <- paste0("DT_data.5[", TC.names[tc], " > 100 & ", TC_1mindelta.names[tc]," >= 0.5, ",TC_flag.end.names[tc]," := FALSE]")
-    flag.end.true  <- paste0("DT_data.5[", TC.names[tc], " > 100 & ", TC_1mindelta.names[tc]," <  0.5, ",TC_flag.end.names[tc]," := TRUE ]")
+    flag.end.false <- paste0("DT_data.5[", TCs[tc], " > 100 & ", TC_1mindelta.names[tc]," >= 0.5, ",TC_flag.end.names[tc]," := FALSE]")
+    flag.end.true  <- paste0("DT_data.5[", TCs[tc], " > 100 & ", TC_1mindelta.names[tc]," <  0.5, ",TC_flag.end.names[tc]," := TRUE ]")
     
-    # evaluate the commands
+    # evaluate those commands
     eval(parse(text=flag.end.false))
     eval(parse(text=flag.end.true))
     }
@@ -272,13 +264,27 @@ for(f in l_Rdata) {
   
   names(DT_data.5)
   
-  # find indexes for TCn.T.end, start w/ TC6 and test.segment==35
-  DT_data.5[ TC6_flag.end==TRUE,
-             list(record.Tend = min(record)),
+  # calc TCn_record.Tend by test.segment
+  DT_record.Tend <-
+  DT_data.5[ !is.na(test.segment),
+             list(TC6_record.Tend = min(record)),
              by=test.segment ]
 
+  # calc TC6_T.end by test.segment
+  DT_data.5[record %in% DT_record.Tend$TC6_record.Tend,
+            list(T6_T.end = TC6)]
+  
+  
+  # merge onto DT_data.5
+  merge(DT_data.5, DT_record.Tend, by.x = "record", by.y = "TC6_record.Tend")
+  
+  
   # see if that worked
-  DT_data.5[ , list(TC6_T.end = unique(TC6_T.end)), by=test.segment]
+  DT_data.5[!is.na(TC6_record.Tend) , list(TC6_record.Tend = unique(TC6_record.Tend)), by=test.segment]
+  
+  
+  
+  
   
   # save DT_data.5 as .Rdata
   save(DT_data.5, file = paste0(wd_data_out, f))
