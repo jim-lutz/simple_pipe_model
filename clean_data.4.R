@@ -289,11 +289,11 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   
   # look at fDeltaT by AVPV for TC6
   ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
-    geom_path(aes(x=TC6_AVPV, y= fDeltaT)) +
+    geom_path(aes(x=TC6_AVPV, y= fDeltaT, color=as.factor(test.segment))) +
     ggtitle( paste0('normalized temperature vs AVPV at TC6 by test.segment in ', bfname) ) +
-    scale_x_continuous(name = "AVPV") +
-    scale_y_continuous(name = "normalized temperature") + #  ,limits = c(-5,5)
-    facet_wrap(~test.segment)
+    scale_x_continuous(name = "AVPV" ,limits = c(0,15)) +
+    scale_y_continuous(name = "normalized temperature") # +  ,limits = c(-5,5)
+    # facet_wrap(~test.segment)
 
   ggsave(filename = paste0(bfname,"TC6_normTvsAVPV.png"), path=wd_charts,
          width = 19, height = 10 )
