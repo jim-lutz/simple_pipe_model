@@ -259,8 +259,8 @@ for(f in l_Rdata) {
   # loop through TCs starting with TC2
   for(tc in 2:length(TC.names)) {
     # create commands for each TC
-    flag.end.false <- paste0("DT_data.5[", TC.names[tc], " > 100 & ", TC_1mindelta.names[tc]," >= 0.5, ",TC_flag.end.names[tc]," := 0]")
-    flag.end.true  <- paste0("DT_data.5[", TC.names[tc], " > 100 & ", TC_1mindelta.names[tc]," <  0.5, ",TC_flag.end.names[tc]," := 1]")
+    flag.end.false <- paste0("DT_data.5[", TC.names[tc], " > 100 & ", TC_1mindelta.names[tc]," >= 0.5, ",TC_flag.end.names[tc]," := FALSE]")
+    flag.end.true  <- paste0("DT_data.5[", TC.names[tc], " > 100 & ", TC_1mindelta.names[tc]," <  0.5, ",TC_flag.end.names[tc]," := TRUE ]")
     
     # evaluate the commands
     eval(parse(text=flag.end.false))
@@ -272,10 +272,13 @@ for(f in l_Rdata) {
   
   names(DT_data.5)
   
-  # 
-  
+  # find indexes for TCn.T.end, start w/ TC6 and test.segment==35
+  DT_data.5[ TC6_flag.end==TRUE,
+             list(record.Tend = min(record)),
+             by=test.segment ]
 
-  
+  # see if that worked
+  DT_data.5[ , list(TC6_T.end = unique(TC6_T.end)), by=test.segment]
   
   # save DT_data.5 as .Rdata
   save(DT_data.5, file = paste0(wd_data_out, f))

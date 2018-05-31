@@ -385,3 +385,6 @@ https://plot.ly/~jlutz/11/
   calc actual volume, cumulative sum of the GPM per segment
   this assumes one second per record, with no missing records
   should confirm this    
+  
+  setting TCn.T.end
+  
