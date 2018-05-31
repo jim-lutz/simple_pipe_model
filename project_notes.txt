@@ -388,3 +388,8 @@ https://plot.ly/~jlutz/11/
   
   setting TCn.T.end
   
+  got it to work for TC6, next loop through all the TCs
+  
+  
+  
+  

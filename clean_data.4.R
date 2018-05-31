@@ -29,11 +29,11 @@ wd_data_out   = paste0(wd_data, "5/")
 l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 
 # loop through all the files
-for(f in l_Rdata) {
+# for(f in l_Rdata) {
   
   # this is for testing on just one *.Rdata data.table
   # f = l_Rdata[1]   # 12PEXBareRawData2.Rdata
-  # f = l_Rdata[2]   # 34PEXR47RawData2.Rdata
+  f = l_Rdata[2]   # 34PEXR47RawData2.Rdata
   
   # bare filename w/o extension
   bfname = str_remove(f,".Rdata")
@@ -266,24 +266,40 @@ for(f in l_Rdata) {
   
   # calc TCn_record.Tend by test.segment
   DT_record.Tend <-
-  DT_data.5[ !is.na(test.segment),
+  DT_data.5[ !is.na(test.segment) & TC6_flag.end==TRUE,
              list(TC6_record.Tend = min(record)),
              by=test.segment ]
 
   # calc TC6_T.end by test.segment
-  DT_data.5[record %in% DT_record.Tend$TC6_record.Tend,
-            list(T6_T.end = TC6)]
-  
-  
+  DT_T.end <-
+    DT_data.5[record %in% DT_record.Tend$TC6_record.Tend,
+            list(TC6_T.end = TC6,
+                 test.segment)
+            ]
+    
   # merge onto DT_data.5
-  merge(DT_data.5, DT_record.Tend, by.x = "record", by.y = "TC6_record.Tend")
+  DT_data.5 <-
+    merge(DT_data.5, DT_T.end, by="test.segment", all = TRUE)
+  
+  # calc fDeltaT for TC6
+  DT_data.5[!is.na(T6_T.end), 
+            fDeltaT := (TC6-Tpipe.start)/(TC6_T.end - Tpipe.start),
+            by=test.segment]
   
   
-  # see if that worked
-  DT_data.5[!is.na(TC6_record.Tend) , list(TC6_record.Tend = unique(TC6_record.Tend)), by=test.segment]
+  # look at fDeltaT by AVPV for TC6
+  ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
+    geom_path(aes(x=TC6_AVPV, y= fDeltaT)) +
+    ggtitle( paste0('normalized temperature vs AVPV at TC6 by test.segment in ', bfname) ) +
+    scale_x_continuous(name = "AVPV") +
+    scale_y_continuous(name = "normalized temperature") + #  ,limits = c(-5,5)
+    facet_wrap(~test.segment)
+
+  ggsave(filename = paste0(bfname,"TC6_normTvsAVPV.png"), path=wd_charts,
+         width = 19, height = 10 )
+
   
-  
-  
+  names(DT_data.5)
   
   
   # save DT_data.5 as .Rdata

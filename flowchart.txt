@@ -37,7 +37,7 @@ clean_data.4.R
     # script to add info for test segments in ./data/4/*.Rdata files
     input:  ./data/DT_test_info.Rdata
             ./data/4/*.Rdata
-                12PEXBareRawData2, 34PEXR47RawData2 so far
+                34PEXR47RawData2 so far
     output: ./data/5/*.Rdata
              
 Plotly5.R
