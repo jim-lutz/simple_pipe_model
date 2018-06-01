@@ -390,6 +390,15 @@ https://plot.ly/~jlutz/11/
   
   got it to work for TC6, next loop through all the TCs
   
-  
-  
+2018-06-01
+    export AVPV, fDeltaT, mins.zero, Tair.ave, 
+    Tpipe.start (temperatures of TC3 and beyond at time.zero), GPM.ave
+       
+    time.step is mostly 1 sec , a few off by as much as +- .000001 secs
+    mean Time difference of 1 secs
+    standard deviation  4.040719e-07
+    don't worry about it.
+    good answer to fitting data to normal curve.
+    https://stats.stackexchange.com/questions/70153/linear-regression-best-polynomial-or-better-approach-to-use/70184#70184
+    
   

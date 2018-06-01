@@ -134,17 +134,29 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # average pulses
   DT_data.5[, pulse.ave := (pulse1 + pulse2)/2]
   
-  # confirm it's working appropriately
+  # look to see if it's working appropriately
   DT_data.5[, list(pulse1,pulse2,pulse.ave)]
   
   # lowess by test.segment
   DT_data.5[ , pulse.smooth := lowess(pulse.ave)$y, by=test.segment]
 
-  # confirm it's working appropriately
+  # check to see if it's working appropriately
   DT_data.5[test.segment==1, list(pulse1,pulse2,pulse.ave, pulse.smooth)]
   # that looks good. it's $y of lowess that I'm after
   qplot(data=DT_data.5[test.segment==35], x=1:length(pulse.smooth), y=pulse.smooth)
-    
+  
+  # look at smoothed pulses
+  # ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36])+
+  #   geom_step(aes(x=mins.zero, y= pulse.ave) ) +
+  #   geom_path(aes(x=mins.zero, y= pulse.smooth), color="red" ) +
+  #   ggtitle( paste0('smoothed pulses by test.segment in ', bfname) )+
+  #   scale_x_continuous(name = "duration of draw (min)",limits = c(0,2))+
+  #   scale_y_continuous(name = "smoothed flow (pulses)",limits = c(0,5)) +
+  #   facet_wrap(~test.segment)
+  # 
+  # ggsave(filename = paste0(bfname,"smoothedpulses.png"), path=wd_charts,
+  #        width = 19, height = 10 )
+  
   # calc smoothed GPM
   DT_data.5[ , GPM.smooth := pulse.smooth * gal_pls * 60]
   
@@ -156,6 +168,30 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   #   scale_y_continuous(name = "smoothed flow (GPM)",limits = c(0,5))
   
   # ggsave(filename = paste0(bfname,"smoothedflow.png"), path=wd_charts)
+  
+  # check assumption of 1 second per record
+  DT_data.5[ !is.na(test.segment), 
+             time.step := difftime(timestamp,
+                                   shift(timestamp, n=1, type="lag"),
+                                   units = "secs"),
+             by=test.segment]
+  qplot(1 - as.numeric(DT_data.5[!is.na(test.segment)]$time.step))
+  summary(as.numeric(DT_data.5[!is.na(test.segment)]$time.step))
+   # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+   #    1       1       1       1       1       1      36
+  max(DT_data.5[!is.na(test.segment)]$time.step, na.rm = TRUE)
+  # Time difference of 1.000001 secs
+  min(DT_data.5[!is.na(test.segment)]$time.step, na.rm = TRUE)
+  # Time difference of 0.999999 secs
+  which.max(DT_data.5[!is.na(test.segment)]$time.step)
+  # [1] 62
+  DT_data.5[60:64]
+  
+  mean(as.numeric(DT_data.5[!is.na(test.segment)&!is.na(time.step)]$time.step))
+  # Time difference of 1 secs
+  sd(DT_data.5[!is.na(test.segment)&!is.na(time.step)]$time.step)
+  # [1] 4.040719e-07
+  
   
   # calc actual volume, cumulative sum of the GPM per segment
   # this assumes one second per record, with no missing records
