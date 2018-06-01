@@ -69,7 +69,7 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   
   
   # get the TC variable names
-  TCs <- grep("TC[0-9]+", names(DT_data.4[]), value = TRUE )
+  TC.names <- grep("TC[0-9]+", names(DT_data.4[]), value = TRUE )
   
   # sort DT_data.4 by record
   setkey(DT_data.4, record)
@@ -103,15 +103,15 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
     DT_data.5[!is.na(test.segment) & mins.zero==0,
               .SD,
               by=test.segment,
-              .SDcols=TCs[3:length(TCs)]]
+              .SDcols=TC.names[3:length(TC.names)]]
   
   # calc Tpipe.start
   DT_Tpipe.start[, Tpipe.start := rowMeans(.SD), 
-                 .SDcols=TCs[3:length(TCs)]
+                 .SDcols=TC.names[3:length(TC.names)]
                  ]
   
-  # drop the TCs from Tpipe.start
-  DT_Tpipe.start[, TCs[3:length(TCs)]:=NULL ]
+  # drop the TC.names from Tpipe.start
+  DT_Tpipe.start[, TC.names[3:length(TC.names)]:=NULL ]
   
   # merge Tpipe.start onto DT_data.5
   DT_data.5 <-  merge(DT_data.5,DT_Tpipe.start, by="test.segment", all.x = TRUE )
@@ -194,7 +194,6 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   
   
   # calc actual volume, cumulative sum of the GPM per segment
-  # this assumes one second per record, with no missing records
   DT_data.5[ , AV:=cumsum(GPM.smooth)/60, by=test.segment]
   
   # calc AVPV at each TC
@@ -236,15 +235,15 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # calc fDeltaT
 
   # list of TCn_1min column names
-  TC_1min.names <- paste0(TCs, "_1min")
+  TC_1min.names <- paste0(TC.names, "_1min")
   
   # list of TCn_T.end column names
-  TC_T.end.names <- paste0(TCs, "_T.end")
+  TC_T.end.names <- paste0(TC.names, "_T.end")
   
-  # calculate the TCs for one minute ago
+  # find the TC temperature for one minute ago
   DT_data.5[ !is.na(test.segment), 
              (TC_1min.names) := shift(.SD, n=60, type="lag"),
-             .SDcols = TCs,
+             .SDcols = TC.names,
              by=test.segment]
   
   # look at temperatures for TC2 & TC2_1min
@@ -259,12 +258,12 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 
   # find TCn_1mindelta
   # list of TCn_1mindelta column names
-  TC_1mindelta.names <- paste0(TCs, "_1mindelta")
+  TC_1mindelta.names <- paste0(TC.names, "_1mindelta")
   
   # calculate the TC delta Ts for one minute ago, this almost a derivative
   DT_data.5[ !is.na(test.segment), 
              (TC_1mindelta.names) := .SD - shift(.SD, n=60, type="lag"),
-             .SDcols = TCs,
+             .SDcols = TC.names,
              by=test.segment]
   
   # look at temperatures for TC2_1mindelta
@@ -276,62 +275,94 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   #   facet_wrap(~test.segment)
   # this works except for test segments less than one minute long
   
-  # set a end flag when TCn_1mindelta < 0.5 deg F 
+  # set an end flag when TCn_1mindelta < 0.5 deg F 
   # list of TCn_flag.end column names
-  TC_flag.end.names <- paste0(TCs, "_flag.end")
+  TC_flag.end.names <- paste0(TC.names, "_flag.end")
   
-  # remove TC_flag.end.names columns for debugging
+  # remove TC_flag.end.names columns, for use when debugging
   DT_data.5[, (TC_flag.end.names) := NULL]
   
-  # set end flag to logical
-  # loop through TCs starting with TC2
-  for(tc in 2:length(TCs)) {
-    # create commands for each TC
-    flag.end.false <- paste0("DT_data.5[", TCs[tc], " > 100 & ", TC_1mindelta.names[tc]," >= 0.5, ",TC_flag.end.names[tc]," := FALSE]")
-    flag.end.true  <- paste0("DT_data.5[", TCs[tc], " > 100 & ", TC_1mindelta.names[tc]," <  0.5, ",TC_flag.end.names[tc]," := TRUE ]")
+  # loop through all the TC.names starting with TC2
+  for(tc in 2:length(TC.names)) {
+    
+    # set end flag to logical
+    # create commands to set TC_flag.end for each TC
+    c_flag.end.false <- paste0("DT_data.5[", TC.names[tc], " > 100 & ", TC_1mindelta.names[tc]," >= 0.5, ",TC_flag.end.names[tc]," := FALSE]")
+    c_flag.end.true  <- paste0("DT_data.5[", TC.names[tc], " > 100 & ", TC_1mindelta.names[tc]," <  0.5, ",TC_flag.end.names[tc]," := TRUE ]")
     
     # evaluate those commands
-    eval(parse(text=flag.end.false))
-    eval(parse(text=flag.end.true))
-    }
+    eval(parse(text=c_flag.end.false))
+    eval(parse(text=c_flag.end.true))
+  
+    # make DT_record.Tend, a data.table of the records when 
+    # TC_flag.end is first true by test.segment
+    # create command
+    c_make.DT_record.Tend <-
+      paste0(
+        "DT_record.Tend <- ",
+        "DT_data.5[ !is.na(test.segment) & ", 
+        TC_flag.end.names[tc], "==TRUE, ",
+        "list(",TC.names[tc],"_record.Tend = min(record)), ",
+        "by=test.segment ] ")
+
+    # evaluate the command
+    eval(parse(text=c_make.DT_record.Tend))
+    
+    # calc TC6_T.end by test.segment
+    # make DT_T.end, a data.table of the TC_T.end by test.segment
+    # create command
+    c_make.DT_T.end <-
+      paste0(
+        "DT_T.end<-",
+        "DT_data.5[record %in% DT_record.Tend$",TC.names[tc],"_record.Tend ,",
+                   "list(",TC.names[tc],"_T.end=",TC.names[tc],",",
+                        " test.segment)",
+                 "]"
+        )
+    
+    # evaluate the command
+    eval(parse(text=c_make.DT_T.end))
+    
+
+    # merge DT_T.end onto DT_data.5
+    DT_data.5 <-
+      merge(DT_data.5, DT_T.end, by="test.segment", all = TRUE)
+    
+    
+    # calc fDeltaT for TCs
+    # create command
+    c_calc.fDeltaT <-
+      paste0(
+        "DT_data.5[!is.na(",TC.names[tc],"_T.end),",
+                  " fDeltaT := (",TC.names[tc],"-Tpipe.start)/(",
+                   TC.names[tc],"_T.end-Tpipe.start)," ,
+              " by=test.segment]")
+    
+    # evaluate the command
+    eval(parse(text=c_calc.fDeltaT))
+
+  } # end of TC loop
+
+  names(DT_data.5)
   
   DT_data.5[test.segment==35 & TC6 > 100,
             list(timestamp, TC6, TC6_1min, TC6_1mindelta, TC6_flag.end)][280:300]
   
   names(DT_data.5)
   
-  # calc TCn_record.Tend by test.segment
-  DT_record.Tend <-
-  DT_data.5[ !is.na(test.segment) & TC6_flag.end==TRUE,
-             list(TC6_record.Tend = min(record)),
-             by=test.segment ]
-
-  # calc TC6_T.end by test.segment
-  DT_T.end <-
-    DT_data.5[record %in% DT_record.Tend$TC6_record.Tend,
-            list(TC6_T.end = TC6,
-                 test.segment)
-            ]
-    
-  # merge onto DT_data.5
-  DT_data.5 <-
-    merge(DT_data.5, DT_T.end, by="test.segment", all = TRUE)
-  
-  # calc fDeltaT for TC6
-  DT_data.5[!is.na(T6_T.end), 
-            fDeltaT := (TC6-Tpipe.start)/(TC6_T.end - Tpipe.start),
-            by=test.segment]
-  
   
   # look at fDeltaT by AVPV for TC6
   ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
-    geom_path(aes(x=TC6_AVPV, y= fDeltaT, color=as.factor(test.segment))) +
-    ggtitle( paste0('normalized temperature vs AVPV at TC6 by test.segment in ', bfname) ) +
+    geom_path(aes(x=TC3_AVPV, y= fDeltaT),color='#ca0020') +
+    geom_path(aes(x=TC4_AVPV, y= fDeltaT),color='#f4a582') +
+    geom_path(aes(x=TC5_AVPV, y= fDeltaT),color='#92c5de') +
+    geom_path(aes(x=TC6_AVPV, y= fDeltaT),color='#0571b0') +
+    ggtitle( paste0('normalized temperature vs AVPV by test.segment in ', bfname) ) +
     scale_x_continuous(name = "AVPV" ,limits = c(0,15)) +
-    scale_y_continuous(name = "normalized temperature") # +  ,limits = c(-5,5)
-    # facet_wrap(~test.segment)
+    scale_y_continuous(name = "normalized temperature") + # ,limits = c(-5,5)
+    facet_wrap(~test.segment)
 
-  ggsave(filename = paste0(bfname,"TC6_normTvsAVPV.png"), path=wd_charts,
+  ggsave(filename = paste0(bfname,"TnormvsAVPV.png"), path=wd_charts,
          width = 19, height = 10 )
 
   
