@@ -401,4 +401,14 @@ https://plot.ly/~jlutz/11/
     good answer to fitting data to normal curve.
     https://stats.stackexchange.com/questions/70153/linear-regression-best-polynomial-or-better-approach-to-use/70184#70184
     
+    TCs appear to be in reverse order
+    maybe not. colors were in reverse order
+    
+    > diverge_hcl(5, h = c(260, 0), c = 80, l = c(30, 90), power = 1.5)
+    [1] "#023FA5" "#A1A6C8" "#E2E2E2" "#CA9CA4" "#8E063B"
+
+    use choose_palette()
+    
+    order the test.segments rationally
+    
   
