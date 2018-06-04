@@ -411,4 +411,6 @@ https://plot.ly/~jlutz/11/
     
     order the test.segments rationally
     
-  
+2018-06-04
+    export data by test.segment to *.csv, send to Yanda & Gary
+    export_data.5.R  
