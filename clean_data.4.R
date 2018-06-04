@@ -359,7 +359,7 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # make a label for charts by test.segment
   DT_ts.labels[!is.na(test.segment), 
                ts.label := sprintf(
-                 fmt = "Test Segment %02i: GPM=%3.2f, Tstart=%3.1f, Tair=%3.1f",
+                 fmt = "Test Segment %02i:\nGPM=%3.2f,Tstart=%3.1f,Tair=%3.1f",
                  test.segment, ave.GPM, Tpipe.start, Tair.ave),
                by=test.segment]
   
@@ -371,41 +371,57 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
 
   names(DT_data.5)
   
+  # get a list of the ts.labels in the right order
+  levels.ts.label <-
+  DT_data.5[!is.na(test.segment), 
+            list(test.segment = unique(test.segment),
+                 unom.GPM     = unique(nominal.GPM),
+                 ave.GPM      = unique(ave.GPM),
+                 u.cw         = unique(cold.warm),
+                 Tpipe.start  = unique(Tpipe.start),
+                 ts.label     = unique(ts.label)
+                 ), 
+            by=test.segment][order(unom.GPM,u.cw,ave.GPM)]$ts.label
+  
+  # make a factor for ts.label in the right order,
+  DT_data.5[!is.na(test.segment),
+            f_ts.label := factor(ts.label, levels=levels.ts.label)]
+
   # test colors
   # Barplot using hexadecimal color code
   # barplot(2:6, col=c("#023FA5", "#A1A6C8", "#C2C2C2", "#CA9CA4", "#8E063B"))
   
   # look at temperatures for all the TCs
   ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
-    geom_path(aes(x=mins.zero, y= TC2), color='#023FA5') +
-    geom_path(aes(x=mins.zero, y= TC3), color='#A1A6C8') +
+    geom_path(aes(x=mins.zero, y= TC2), color='#8E063B') +
+    geom_path(aes(x=mins.zero, y= TC3), color='#CA9CA4') +
     geom_path(aes(x=mins.zero, y= TC4), color='#C2C2C2') +
-    geom_path(aes(x=mins.zero, y= TC5), color='#CA9CA4') +
-    geom_path(aes(x=mins.zero, y= TC6), color='#8E063B') +
-    ggtitle( paste0('TC temperatures by test.segment in ', bfname) ) +
-    scale_x_continuous(name = "duration of draw (min)") +
+    geom_path(aes(x=mins.zero, y= TC5), color='#A1A6C8') +
+    geom_path(aes(x=mins.zero, y= TC6), color='#023FA5') +
+    ggtitle( paste0('TC temperatures by test.segment, 3/4in PEX insulated') ) +
+    scale_x_continuous(name = "duration of draw (min)" ,limits = c(0,15) ) +
     scale_y_continuous(name = "temperature" ) + # ,limits = c(125,140))
-    facet_wrap(~test.segment)
+    facet_wrap(~ f_ts.label)
 
-  ggsave(filename = paste0(bfname,"TC6_top.png"), path=wd_charts,
-         width = 19, height = 10 )
+  ggsave(filename = paste0(bfname,"TCtemps.png"), path=wd_charts,
+         width = 19, height = 20 )
   
   
   
   
   # look at fDeltaT by AVPV for TC6
   ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
-    geom_path(aes(x=TC3_AVPV, y= fDeltaT),color='#ca0020') +
-    geom_path(aes(x=TC4_AVPV, y= fDeltaT),color='#f4a582') +
-    geom_path(aes(x=TC5_AVPV, y= fDeltaT),color='#92c5de') +
-    geom_path(aes(x=TC6_AVPV, y= fDeltaT),color='#0571b0') +
-    ggtitle( paste0('normalized temperature vs AVPV by test.segment in ', bfname) ) +
+    geom_path(aes(x=TC3_AVPV, y= fDeltaT),color='#CA9CA4') +
+    geom_path(aes(x=TC4_AVPV, y= fDeltaT),color='#C2C2C2') +
+    geom_path(aes(x=TC5_AVPV, y= fDeltaT),color='#A1A6C8') +
+    geom_path(aes(x=TC6_AVPV, y= fDeltaT),color='#023FA5') +
+    ggtitle( paste0('normalized temperature vs AVPV by test.segment, 3/4in PEX insulated') ) +
     scale_x_continuous(name = "AVPV" ,limits = c(0,15)) +
     scale_y_continuous(name = "normalized temperature") + # ,limits = c(-5,5)
-    facet_wrap(~test.segment)
+    facet_wrap(~f_ts.label)
 
-  ggsave(filename = paste0(bfname,"TnormvsAVPV.png"), path=wd_charts,
-         width = 19, height = 10 )
+  ggsave(filename = paste0(bfname,"Tnorm_AVPV.png"), path=wd_charts,
+         width = 19, height = 20 )
 
   
   names(DT_data.5)
