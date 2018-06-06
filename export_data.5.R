@@ -64,6 +64,16 @@ fwrite(DT_data.5[,list(test.segment, ts.label,
 )
 
 
+# zoomed look at TCn_T.norm by TCn_dVol.norm for all the TCs and test.segments
+ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 13]) +
+  geom_path(aes(x=TC3_dVol.norm, y= TC3_T.norm),color='#CA9CA4') +
+  geom_path(aes(x=TC4_dVol.norm, y= TC4_T.norm),color='#C2C2C2') +
+  geom_path(aes(x=TC5_dVol.norm, y= TC5_T.norm),color='#A1A6C8') +
+  geom_path(aes(x=TC6_dVol.norm, y= TC6_T.norm),color='#023FA5') +
+  ggtitle( paste0('normalized temperature vs normalized delivered volume test.segment 13, 3/4in PEX insulated') ) +
+  scale_x_continuous(name = "normalized delivered volume" ,limits = c(0,5)) +
+  scale_y_continuous(name = "normalized temperature" ,limits = c(-0.01,1.01)) 
 
-
-
+repeat with these test.segments
+35, 23, 13, 09, 11, 21,33,25, 27, 07, 19, 22, 17, 29, 05, 03, 31
+  

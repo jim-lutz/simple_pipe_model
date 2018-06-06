@@ -426,5 +426,8 @@ https://plot.ly/~jlutz/11/
         
     normalized temperature vs normalized delivered volume looks a lot cleaner now
     
+    next do one plot per test.segment.
+    think about fitting Gomperts curve to by TC and test.segment see how different
+    
             
     
