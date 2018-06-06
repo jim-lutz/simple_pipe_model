@@ -416,3 +416,15 @@ https://plot.ly/~jlutz/11/
     export_data.5.R  
     
     fdeltaT not calculated separately for each TC?
+    
+2018-06-05
+    and rename in clean_data.4.R
+        fdeltaT to TCn_T.norm
+        AV to deliv.vol
+        PV to TCn_pipe.vol
+        AVPV to TCn_dVol.norm
+        
+    normalized temperature vs normalized delivered volume looks a lot cleaner now
+    
+            
+    

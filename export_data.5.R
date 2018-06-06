@@ -49,28 +49,18 @@ DT_data.5
 str(DT_data.5)
 names(DT_data.5)
 
-test.segment, 
-timestamp,"time.zero" "mins.zero"  
-"pulse1"        "pulse2"  "pulse.smooth"  "GPM.smooth"   "AV"    
-TC1           TC2           TC3           TC4           TC5          TC6 
-"TC1_gal"       "TC2_gal"     "TC3_gal"       "TC4_gal"       "TC5_gal"       "TC6_gal"
-"TC1_AVPV" "TC2_AVPV" "TC3_AVPV"      "TC4_AVPV"      "TC5_AVPV"      "TC6_AVPV"
 
-[1] "test.segment"  "timestamp"     "record"        "pulse1"        "pulse2"       
-[6] "TC1"           "TC2"           "TC3"           "TC4"           "TC5"          
-[11] "TC6"           "TairNear"      "TairFar"       "TestFlag"      "nominal"      
-[16] "nominal.GPM"   "test.type"     "pipe.matl"     "insul.level"   "cold.warm"    
-[21] "pipe.nom.diam" "test.num"      "other.comment" "TC1_gal"       "TC2_gal"      
-[26] "TC3_gal"       "TC4_gal"       "TC5_gal"       "TC6_gal"       "time.zero"    
-[31] "mins.zero"     "Tair.ave"      "Tpipe.start"   "ave.GPM"       "pulse.ave"    
-[36] "pulse.smooth"  "GPM.smooth"    "time.step"     "AV"            "TC1_AVPV"     
-[41] "TC2_AVPV"      "TC3_AVPV"      "TC4_AVPV"      "TC5_AVPV"      "TC6_AVPV"     
-[46] "nrec"          "TC1_1min"      "TC2_1min"      "TC3_1min"      "TC4_1min"     
-[51] "TC5_1min"      "TC6_1min"      "TC1_1mindelta" "TC2_1mindelta" "TC3_1mindelta"
-[56] "TC4_1mindelta" "TC5_1mindelta" "TC6_1mindelta" "TC2_flag.end"  "TC2_T.end"    
-[61] "fDeltaT"       "TC3_flag.end"  "TC3_T.end"     "TC4_flag.end"  "TC4_T.end"    
-[66] "TC5_flag.end"  "TC5_T.end"     "TC6_flag.end"  "TC6_T.end"     "ts.label"     
-[71] "f_ts.label"   
+# DT_data.5 AVPV & Tnorm data to export
+fwrite(DT_data.5[,list(test.segment, ts.label, 
+                       timestamp, time.zero, mins.zero,
+                       pulse1, pulse2, pulse.smooth, GPM.smooth, AV,
+                       TC1, TC2, TC3, TC4, TC5, TC6, 
+                       TC1_gal, TC2_gal, TC3_gal,TC4_gal, TC5_gal, TC6_gal,
+                       TC1_AVPV, TC2_AVPV, TC3_AVPV, TC4_AVPV, TC5_AVPV, TC6_AVPV,
+                       TC2_T.end, TC3_T.end, TC4_T.end, TC5_T.end, TC6_T.end)
+                    ],
+       file = paste0(wd_data_5, bfname, ".AVPV_Tnorm.csv")
+)
 
 
 

@@ -79,6 +79,15 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   
   # see if worked
   str(DT_data.5)
+  names(DT_data.5)
+  
+  # change TCn_gal to TCn_pipe.vol
+  setnames(DT_data.5, 
+           old = c('TC1_gal', 'TC2_gal', 'TC3_gal', 
+                   'TC4_gal', 'TC5_gal', 'TC6_gal'),
+           new = c('TC1_pipe.vol', 'TC2_pipe.vol', 'TC3_pipe.vol', 
+                   'TC4_pipe.vol', 'TC5_pipe.vol', 'TC6_pipe.vol')
+             )
   
   # calculate time.zero from the start of each test.segment
   DT_data.5[!is.na(test.segment), time.zero := min(timestamp), by=test.segment]
@@ -164,7 +173,7 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36])+
   #   geom_path(aes(x=mins.zero, y= GPM.smooth, color=as.factor(test.segment)))+
   #   ggtitle( paste0('smoothed flow by test.segment in ', bfname) )+
-  #   scale_x_continuous(name = "duration of draw (min)")+ 
+  #   scale_x_continuous(name = "duration of draw (min)")+
   #   scale_y_continuous(name = "smoothed flow (GPM)",limits = c(0,5))
   
   # ggsave(filename = paste0(bfname,"smoothedflow.png"), path=wd_charts)
@@ -185,7 +194,7 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # Time difference of 0.999999 secs
   which.max(DT_data.5[!is.na(test.segment)]$time.step)
   # [1] 62
-  DT_data.5[60:64]
+  DT_data.5[60:64, timestamp]
   
   mean(as.numeric(DT_data.5[!is.na(test.segment)&!is.na(time.step)]$time.step))
   # Time difference of 1 secs
@@ -193,33 +202,35 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # [1] 4.040719e-07
   
   
-  # calc actual volume, cumulative sum of the GPM per segment
-  DT_data.5[ , AV:=cumsum(GPM.smooth)/60, by=test.segment]
+  # calc actual delivered volume, cumulative sum of the GPM by test.segment
+  DT_data.5[ , deliv.vol:=cumsum(GPM.smooth)/60, by=test.segment]
   
-  # calc AVPV at each TC
-  # list of TC_gal names, these are the names of the columns that contain PV
-  TC_gal.names <- grep("TC[0-9]+_gal", names(DT_data.5), value = TRUE)
+  # calc TCn_dVol.norm at each TC
+  # list of TC_gal names, these are the names of the columns that contain TCn_pipe.vol
+  TC_pipe.vol.names <- grep("TC[0-9]+_pipe.vol", names(DT_data.5), value = TRUE)
   
-  # list of TCn_AVPV column names
-  TC_AVPV.names <- str_replace(TC_gal.names, "_gal", "_AVPV")
+  # list of TCn_dVol.norm column names
+  TC_dVol.norm.names <- str_replace(TC_pipe.vol.names, "_pipe.vol", "_dVol.norm")
   
-  # calc AVPV by TC
+  # calc TCn_dVol.norm by TC
   DT_data.5[ !is.na(test.segment), 
-             (TC_AVPV.names) := AV/.SD,
-             .SDcols = TC_gal.names,
+             (TC_dVol.norm.names) := deliv.vol/.SD,
+             .SDcols = TC_pipe.vol.names,
              by=test.segment]
   
-  # see what AVPV looks like for TC2 & TC6
+  names(DT_data.5)
+  
+  # see what TCn_dVol.norm looks like for TC6
   # ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36])+
-  #   geom_path(aes(x=mins.zero, y= TC6_AVPV, color=as.factor(test.segment)))+
-  #   ggtitle( paste0('TC6_AVPV by test.segment in ', bfname) )+
+  #   geom_path(aes(x=mins.zero, y= TC6_dVol.norm, color=as.factor(test.segment)))+
+  #   ggtitle( paste0('TC6_dVol.norm by test.segment in ', bfname) )+
   #   scale_x_continuous(name = "duration of draw (min)")+
   #   scale_y_continuous(name = "actual volume to pipe volume")
   # seems OK
   
   # add number of records by test.segment
   DT_data.5[!is.na(test.segment), nrec:=length(record), by=test.segment ]
-  
+
   # look at temperatures for TC6
   # ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
   #   geom_path(aes(x=mins.zero, y= TC6, color=as.factor(test.segment))) +
@@ -232,8 +243,9 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   #        width = 19, height = 10 )
   
     
-  # calc fDeltaT
+  # calc normalized temperature
 
+  # first the TCn_T.end
   # list of TCn_1min column names
   TC_1min.names <- paste0(TC.names, "_1min")
   
@@ -285,6 +297,8 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # loop through all the TC.names starting with TC2
   for(tc in 2:length(TC.names)) {
     
+    # for debugging only tc=3
+    
     # set end flag to logical
     # create commands to set TC_flag.end for each TC
     c_flag.end.false <- paste0("DT_data.5[", TC.names[tc], " > 100 & ", TC_1mindelta.names[tc]," >= 0.5, ",TC_flag.end.names[tc]," := FALSE]")
@@ -295,8 +309,8 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
     eval(parse(text=c_flag.end.true))
   
     # make DT_record.Tend, a data.table of the records when 
-    # TC_flag.end is first true by test.segment
-    # create command
+    # create command to find the record for the
+    # first TC_flag.end is true by test.segment
     c_make.DT_record.Tend <-
       paste0(
         "DT_record.Tend <- ",
@@ -308,7 +322,7 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
     # evaluate the command
     eval(parse(text=c_make.DT_record.Tend))
     
-    # calc TC6_T.end by test.segment
+    # calc TCn_T.end by test.segment
     # make DT_T.end, a data.table of the TC_T.end by test.segment
     # create command
     c_make.DT_T.end <-
@@ -329,22 +343,23 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
       merge(DT_data.5, DT_T.end, by="test.segment", all = TRUE)
     
     
-    # calc fDeltaT for TCs
+    # calc TCn_T.norm
     # create command
-    c_calc.fDeltaT <-
+    c_calc.TCn_T.norm <-
       paste0(
         "DT_data.5[!is.na(",TC.names[tc],"_T.end),",
-                  " fDeltaT := (",TC.names[tc],"-Tpipe.start)/(",
+                  TC.names[tc],"_T.norm := (",TC.names[tc],"-Tpipe.start)/(",
                    TC.names[tc],"_T.end-Tpipe.start)," ,
               " by=test.segment]")
     
     # evaluate the command
-    eval(parse(text=c_calc.fDeltaT))
+    eval(parse(text=c_calc.TCn_T.norm))
 
   } # end of TC loop
 
   names(DT_data.5)
   
+  # see what's there
   DT_data.5[test.segment==35 & TC6 > 100,
             list(timestamp, TC6, TC6_1min, TC6_1mindelta, TC6_flag.end)][280:300]
   
@@ -387,10 +402,6 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   DT_data.5[!is.na(test.segment),
             f_ts.label := factor(ts.label, levels=levels.ts.label)]
 
-  # test colors
-  # Barplot using hexadecimal color code
-  # barplot(2:6, col=c("#023FA5", "#A1A6C8", "#C2C2C2", "#CA9CA4", "#8E063B"))
-  
   # look at temperatures for all the TCs
   ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
     geom_path(aes(x=mins.zero, y= TC2), color='#8E063B') +
@@ -409,18 +420,18 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   
   
   
-  # look at fDeltaT by AVPV for TC6
+  # look at TCn_T.norm by TCn_dVol.norm for all the TCs and test.segments
   ggplot(data=DT_data.5[!is.na(test.segment) & test.segment %in% 1:36]) +
-    geom_path(aes(x=TC3_AVPV, y= fDeltaT),color='#CA9CA4') +
-    geom_path(aes(x=TC4_AVPV, y= fDeltaT),color='#C2C2C2') +
-    geom_path(aes(x=TC5_AVPV, y= fDeltaT),color='#A1A6C8') +
-    geom_path(aes(x=TC6_AVPV, y= fDeltaT),color='#023FA5') +
-    ggtitle( paste0('normalized temperature vs AVPV by test.segment, 3/4in PEX insulated') ) +
-    scale_x_continuous(name = "AVPV" ,limits = c(0,15)) +
-    scale_y_continuous(name = "normalized temperature") + # ,limits = c(-5,5)
+    geom_path(aes(x=TC3_dVol.norm, y= TC3_T.norm),color='#CA9CA4') +
+    geom_path(aes(x=TC4_dVol.norm, y= TC4_T.norm),color='#C2C2C2') +
+    geom_path(aes(x=TC5_dVol.norm, y= TC5_T.norm),color='#A1A6C8') +
+    geom_path(aes(x=TC6_dVol.norm, y= TC6_T.norm),color='#023FA5') +
+    ggtitle( paste0('normalized temperature vs normalized delivered volume by test.segment, 3/4in PEX insulated') ) +
+    scale_x_continuous(name = "normalized delivered volume" ,limits = c(0,15)) +
+    scale_y_continuous(name = "normalized temperature") + 
     facet_wrap(~f_ts.label)
 
-  ggsave(filename = paste0(bfname,"Tnorm_AVPV.png"), path=wd_charts,
+  ggsave(filename = paste0(bfname,"T.norm_dVol.norm.png"), path=wd_charts,
          width = 19, height = 20 )
 
   
@@ -430,8 +441,7 @@ l_Rdata <- list.files(path = wd_data_in, pattern = "*.Rdata")
   # save DT_data.5 as .Rdata
   save(DT_data.5, file = paste0(wd_data_out, f))
 
-  # plotting here? moved test.segment summary plotting to clean_data.5.R
-  
+
   # remove data.tables before next spreadsheet
   rm(DT_data.4, DT_data.5)
 
