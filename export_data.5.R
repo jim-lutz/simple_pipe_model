@@ -1,5 +1,5 @@
 # export_data.5.R
-# script to export data behind fDeltaT & AVPV charts 
+# script to export data behind TCn_T.norm & TCn_dVol.norm charts 
 # Jim Lutz "Mon Jun  4 10:50:26 2018"
 
 # set packages & etc
@@ -21,7 +21,7 @@ load(file = paste0(wd_data, "DT_test_info.Rdata"))
 names(DT_test_info)
 # View(DT_test_info)
 
-# DT_test_info data to export
+# export DT_test_info data to test_info.csv
 fwrite(DT_test_info[,list(fname, title, matl, nom.diam, R.value, 
                           ODin, IDin, gal_pls, ft_gal,
                           TC1_gal, TC2_gal, TC3_gal, TC4_gal, TC5_gal, TC6_gal, 
@@ -52,15 +52,18 @@ names(DT_data.5)
 
 # DT_data.5 AVPV & Tnorm data to export
 fwrite(DT_data.5[,list(test.segment, ts.label, 
-                       timestamp, time.zero, mins.zero,
-                       pulse1, pulse2, pulse.smooth, GPM.smooth, AV,
+                       timestamp, mins.zero,
+                       pulse1, pulse2, pulse.smooth, GPM.smooth, deliv.vol,
                        TC1, TC2, TC3, TC4, TC5, TC6, 
-                       TC1_gal, TC2_gal, TC3_gal,TC4_gal, TC5_gal, TC6_gal,
-                       TC1_AVPV, TC2_AVPV, TC3_AVPV, TC4_AVPV, TC5_AVPV, TC6_AVPV,
-                       TC2_T.end, TC3_T.end, TC4_T.end, TC5_T.end, TC6_T.end)
+                       TC1_pipe.vol, TC2_pipe.vol, TC3_pipe.vol,TC4_pipe.vol, TC5_pipe.vol, TC6_pipe.vol,
+                       TC1_dVol.norm, TC2_dVol.norm, TC3_dVol.norm, TC4_dVol.norm, TC5_dVol.norm, TC6_dVol.norm,
+                       TC2_T.end, TC3_T.end, TC4_T.end, TC5_T.end, TC6_T.end,
+                       TC2_T.norm, TC3_T.norm, TC4_T.norm, TC5_T.norm, TC6_T.norm)
                     ],
-       file = paste0(wd_data_5, bfname, ".AVPV_Tnorm.csv")
+       file = paste0(wd_data_5, bfname, ".T.norm_dVol.norm.csv")
 )
+
+
 
 
 
