@@ -55,3 +55,13 @@ clean_data.5.R
                 12PEXBareRawData2, 34PEXR47RawData2 so far
     output: ./data/5/*.test.segment.Rdata
             
+export_data.5.R
+    # script to create TCn_T.norm & TCn_dVol.norm charts and export data behind them
+    input:  ./data/DT_test_info.Rdata
+            ./data/5/*.Rdata
+                34PEXR47RawData2 so far
+    output: ./data/5/*.T.norm_dVol.norm.csv
+            ./charts/*_T.norm_dVol.norm.png
+    
+            
+            

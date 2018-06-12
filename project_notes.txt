@@ -1,5 +1,4 @@
-2018-03-30
-    see http://happygitwithr.com/ to set up git repository
+2018-03-30    see http://happygitwithr.com/ to set up git repository
     follow her directions in the directory above, not here.
     
     in a trial read_pipe_data.R reads stuff in from a spreadsheet.
@@ -428,6 +427,23 @@ https://plot.ly/~jlutz/11/
     
     next do one plot per test.segment.
     think about fitting Gomperts curve to by TC and test.segment see how different
+    
+2018-06-06
+    at some point look at calculating Re at each TC 
+    
+    process 3/4 Cu bare, close to 1 gallon TC, to send to Bruce Webster, PAX
+    
+2018-06-12
+    think about fitting Gomperts curve to by TC and test.segment see how different
+    process 3/4 Cu bare, close to 1 gallon TC, to send to Bruce Webster, PAX
+
+    look at calculating Re 
+    
+    add_Re.R
+    use water.SUPCRT92 from package CHNOSZ
+    haven't found anyone implementing REFPROP from NIST in R yet
+    
+    make a function Re(vel(ft/sec, GPM?), ID(ft), T(degF), P(PSI?) ) 
     
             
     
