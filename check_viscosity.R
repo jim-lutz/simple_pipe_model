@@ -12,51 +12,45 @@ source("setup.R")
 if(!require(CHNOSZ)){install.packages("CHNOSZ")}
 library(CHNOSZ)
 
-# water
-# Dynamic viscosity (g cm^-1 s^-1) in poise, (= 0.1 Pa s in SI)
-water.SUPCRT92(property='visc', T = 298.15, P = 1)
-#          visc
-# 1 0.008904924
-
-# density (kg m^3)
-water.SUPCRT92(property='rho', T = 298.15, P = 1)
-#        rho
-# 1 997.0614
-
 # Reynolds number
 # Re = ρ * u * D / μ
 # ρ is the density of the fluid (kg/m3)
 # u is the mean velocity of the fluid (m/s)
 # D is the inside diameter of the pipe (m)
 # μ is the dynamic viscosity of the fluid (Pa·s = N·s/m2 = kg/(m·s))
+#  or
+# Re = u * D / ν
+# ν is the kinematic viscosity of the fluid 
+# (cm^2/s in CHNOSZ or ft^2/s in miniREFPROP)
+
 
 # set up paths to working directories
 source("setup_wd.R")
 
-# read water_from_miniREFPROP.csv
+# read water_from_miniREFPROP.2.csv
 # need to put names, units, etc before data and data names
+# don't forget change tabs to commas as well
 DT_miniREFPROP <- 
-  fread(file = paste0(wd_data, "water_from_miniREFPROP.csv"),
+  fread(file = paste0(wd_data, "water_from_miniREFPROP.2.csv"),
         skip = 2,
       verbose = TRUE)
 
 # see what came through
 str(DT_miniREFPROP)
 
+# get rid of blank rows
+DT_miniREFPROP <- DT_miniREFPROP[!is.na(T)]
+
 # make a nominal pressure
 DT_miniREFPROP[, Pnom := P]
 DT_miniREFPROP[P<1, Pnom := 0]
 
-# look at viscosity vs temp by pressure
-ggplot(data=DT_miniREFPROP[!is.na(T)], aes(x=T, y= μ, color=as.factor(Pnom)))+
-  geom_line() # +
-  # ggtitle( paste0('nominal vs calculated flow by test.segment in ', bfname) )+
-  # scale_x_continuous(name = "calculated flow (GPM)", limits = c(0,5))+ 
-  # scale_y_continuous(name = "nominal flow (GPM)",limits = c(0,5))+
-  # geom_abline(slope = 1, intercept = 0)
+# look at dynamic viscosity vs temp by pressure
+ggplot(data=DT_miniREFPROP[!is.na(T)], aes(x=T, y= mu, color=as.factor(Pnom)))+
+  geom_line() 
 
-# look at viscosity vs pressure by (some) temperatures
-ggplot(data=DT_miniREFPROP[T %in% seq(40,180,20)], aes(x=P, y= μ, color=as.factor(T)))+
+# look at dynamic viscosity vs pressure by (some) temperatures
+ggplot(data=DT_miniREFPROP[T %in% seq(40,180,20)], aes(x=P, y= mu, color=as.factor(T)))+
   geom_line()
 # it's very flat, can ignore pressure impacts on viscosity
 
@@ -65,7 +59,6 @@ ggplot(data=DT_miniREFPROP[!is.na(T)], aes(x=T, y= D, color=as.factor(Pnom)))+
   geom_line() 
 # minor impact of pressure
 
-# see if it's same from CHNOSZ
 # generate same data table from CHNOSZ
 DT_CHNOSZ <-
 merge(data.table(P=seq(0,150,25), dummy='1'), 
@@ -81,10 +74,10 @@ DT_CHNOSZ[ , T.K := (T-32)/1.8 + 273.15]
 # * Pa/PSI  /  Pa/bar
 DT_CHNOSZ[ , P.bar := ( (P + 14.69595) * 6894.757 ) / 100000 ]
 
-# now calc viscosity (g cm^-1 s^-1 = 0.1 * pascal second (Pa · s))
+# now calc dynamic viscosity (g cm^-1 s^-1 = 0.1 * pascal second (Pa · s))
 DT_CHNOSZ[, mu.poise := water.SUPCRT92(property='visc', T=T.K, P=P.bar )]
 
-# convert viscosity from poise 
+# convert dynamic viscosity from poise 
 # to Pa-s then to lbm/ft-s
 DT_CHNOSZ[, mu.lbm_ft_s := mu.poise / 10 / 1.488164 ]
 
@@ -94,14 +87,13 @@ DT_CHNOSZ[, rho.kg_m_3 := water.SUPCRT92(property='rho', T=T.K, P=P.bar )]
 # convert density from kg/m^3 (* kg/lbm * m^3/in^3 * 12in*12in*12in)  to lbm/ft^3 
 DT_CHNOSZ[, rho.lbm_ft_3 := rho.kg_m_3 / 4.5359237E-01 * 1.6387064E-05 * (12*12*12)]
 
-DT_CHNOSZ[,list( rho.kg_m_3, rho.lbm_ft_3)]
-qplot(data = DT_CHNOSZ, rho.kg_m_3, rho.lbm_ft_3 )
-# looks like it should now
+# add kinematic viscosity (cm^2/s)
+DT_CHNOSZ[, nu.stokes := water.SUPCRT92(property='visck', T=T.K, P=P.bar )]
 
-qplot(data = DT_CHNOSZ, rho.kg_m_3 )
-DT_CHNOSZ[rho.kg_m_3<100]
-DT_CHNOSZ[P==0 & T>100]
-
+# convert kinematic viscosity from cm^2/s (stokes) to ft^2/s
+# * 10^-4 (m^2/cm^2) -> m^2/s
+# / 9.290304E-02 (m^2/ft^2) -> ft^2/s
+DT_CHNOSZ[, nu.ft_2_s := nu.stokes * 10^-4 / 9.290304E-02 ]
 
 # merge & plot
 names(DT_CHNOSZ)
@@ -114,18 +106,24 @@ merge(DT_miniREFPROP[!is.na(T)], DT_CHNOSZ,
 
 names(DT_water)
 
-# compare viscosity
-DT_water[,list(μ, mu.lbm_ft_s)]
+# look at kinematic viscosity miniREFPROP & CHNOSZ by Pnom
+DT_water[,list(mean.nu        = mean(nu ),
+               mean.nu.ft_2_s = mean(nu.ft_2_s )),
+         by=Pnom]
+
+
+# compare dynamic viscosity
+DT_water[,list(mu, mu.lbm_ft_s)]
 # CHNOSZ about .000001 too high
 
 # look at viscosity vs temp at one pressure 
-ggplot(data=DT_water[P==75], aes(x=T, y= μ) )+
+ggplot(data=DT_water[P==75], aes(x=T, y= mu) )+
   geom_line() +
   geom_line( aes(x=T, y=mu.lbm_ft_s), color='red')
 # can't tell them apart
 
 # look at difference in viscosity as percent of miniREFPROP values
-ggplot(data=DT_water[P==75], aes(x=T, y= (μ - mu.lbm_ft_s)) )+
+ggplot(data=DT_water[P==75], aes(x=T, y= (mu - mu.lbm_ft_s)) )+
   geom_line() +
   scale_y_continuous(name = "difference in viscosity",
                      limits = c(-0.000001, 0)
@@ -156,8 +154,34 @@ DT_water[,list(diff.rho     = mean(D-rho.lbm_ft_3),
                min.diff.rho = min(D-rho.lbm_ft_3)),
          by=Pnom]
 
+# look at kinematic viscosity 
+ggplot(data=DT_water, 
+       aes(x=T, y= nu, color=as.factor(Pnom)) )+
+  geom_line() +
+  scale_y_continuous(name = "kinimatic viscosity" )
 
-# calculate and compare kinematic viscosity
+# look at difference in kinematic viscosity across temperature
+ggplot(data=DT_water[T %in% seq(40,180,20)], 
+       aes(x=Pnom, y=nu , color=as.factor(T)) )+
+  geom_line() +
+  scale_y_continuous(name = "kinimatic viscosity (miniREFPROP)")
+# it's independent of pressure
 
+# look at difference in kinematic viscosity 
+ggplot(data=DT_water, 
+       aes(x=T, y= ( nu - nu.ft_2_s)/nu, color=as.factor(Pnom)) )+
+  geom_line() +
+  scale_y_continuous(name = "kinimatic viscosity (miniREFPROP - CHNOsZ)/miniREFPROP",
+                     limits = c(-0.0015,0))
+
+# compare kinematic viscosity miniREFPROP & CHNOSZ by Pnom
+DT_water[,list(mean.nu       = mean(nu),
+               mean.diff.nu  = mean(nu - nu.ft_2_s),
+               frac.diff.nu  = mean((nu - nu.ft_2_s)/nu ),
+               max.diff.nu   = max(nu - nu.ft_2_s),
+               min.diff.nu   = min(nu - nu.ft_2_s)),
+         by=Pnom]
+# difference in 4th significant digit
+# probably ignore for now.
 
 

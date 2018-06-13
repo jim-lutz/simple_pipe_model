@@ -463,6 +463,13 @@ https://plot.ly/~jlutz/11/
             if can't ignore impact of pressure, will have to back (iteratively) calculate pressure
             at start of pipe from Re & f from Moody chart
             
+    used check_viscosity.R to compare miniREFPROP (REFPROP not in open R) to CHNOSZ
+    differences are ~ 4th significant digit
+    viscosities are independent of pressure.
+    easier to use kinematic viscosity (nu), it's available directly,
+    won't compound rounding errors by nu = rho / mu
+    calc Re = V.mean * diam / nu 
+    
          
     
               
