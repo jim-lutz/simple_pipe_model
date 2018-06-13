@@ -42,7 +42,6 @@ DT_miniREFPROP <-
 
 # see what came through
 str(DT_miniREFPROP)
-View(DT_miniREFPROP)
 
 # make a nominal pressure
 DT_miniREFPROP[, Pnom := P]
@@ -60,6 +59,11 @@ ggplot(data=DT_miniREFPROP[!is.na(T)], aes(x=T, y= μ, color=as.factor(Pnom)))+
 ggplot(data=DT_miniREFPROP[T %in% seq(40,180,20)], aes(x=P, y= μ, color=as.factor(T)))+
   geom_line()
 # it's very flat, probably can ignore pressure impacts on viscosity
+
+# look at density vs temp by pressure
+ggplot(data=DT_miniREFPROP[!is.na(T)], aes(x=T, y= D, color=as.factor(Pnom)))+
+  geom_line() 
+# minor impact of pressure
 
 # see if it's same from CHNOSZ
 # generate same data table from CHNOSZ
@@ -81,3 +85,53 @@ DT_CHNOSZ[, mu.poise := water.SUPCRT92(property='visc', T=T.K, P=P.bar )]
 # convert viscosity from poise 
 # to Pa-s then to lbm/ft-s
 DT_CHNOSZ[, mu.lbm_ft_s := mu.poise / 10 / 1.488164 ]
+
+# add density 
+DT_CHNOSZ[, rho.kg_m_3 := water.SUPCRT92(property='rho', T=T.K, P=P.bar )]
+
+# convert density from kg/m^3 to lbm/ft^3
+DT_CHNOSZ[, rho.lbm_ft_3 := rho.kg_m_3 * 16.01846]
+
+# merge & plot
+names(DT_CHNOSZ)
+names(DT_miniREFPROP)
+DT_water <-
+merge(DT_miniREFPROP[!is.na(T)], DT_CHNOSZ,
+      by.x = c('Pnom', 'T'),
+      by.y = c('P', 'T'),
+      all=TRUE)
+
+names(DT_water)
+
+# compare viscosity
+DT_water[,list(μ, mu.lbm_ft_s)]
+# CHNOSZ about .000001 too high
+
+# look at viscosity vs temp at one pressure 
+ggplot(data=DT_water[P==75], aes(x=T, y= μ) )+
+  geom_line() +
+  geom_line( aes(x=T, y=mu.lbm_ft_s), color='red')
+# can't tell them apart
+
+# look at difference in viscosity as percent of miniREFPROP values
+ggplot(data=DT_water[P==75], aes(x=T, y= (μ - mu.lbm_ft_s)) )+
+  geom_line() +
+  scale_y_continuous(name = "difference in viscosity",
+                     limits = c(-0.000001, 0)
+                     )
+# CHNOSZ values about .0000003 too high
+
+# compare density
+DT_water[,list(D, rho.lbm_ft_3)]
+# bad units conversion problem?
+
+
+
+
+# look at difference in density as percent of miniREFPROP values
+ggplot(data=DT_water[P==75], aes(x=T, y= (D - rho.lbm_ft_3)/D) )+
+  geom_line() +
+  scale_y_continuous(name = "difference in density"
+  )
+
+
