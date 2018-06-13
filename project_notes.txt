@@ -442,8 +442,28 @@ https://plot.ly/~jlutz/11/
     add_Re.R
     use water.SUPCRT92 from package CHNOSZ
     haven't found anyone implementing REFPROP from NIST in R yet
+    maybe http://www.coolprop.org/coolprop/wrappers/R/index.html
+            http://www.coolprop.org/coolprop/REFPROP.html
+            may have to install/buy REFPROP
+            https://www.nist.gov/srd/refprop
     
     make a function Re(vel(ft/sec, GPM?), ID(ft), T(degF), P(PSI?) ) 
     
+2018-06-13
+    got miniREFPROP.exe to work, 
+    https://trc.nist.gov/refprop/MINIREF/MINIREF.HTM
+    
+    calculated tables of μ by P & T for pure water
+    see ./data/water_from_miniREFPROP.csv 
+    
+    compare μ calculated from CHNOSZ to the ones from miniREFPROP
+    to:
+        1) see how different they are
+        2) see if can ignore impact of pressure on μ
+            if can't ignore impact of pressure, will have to back (iteratively) calculate pressure
+            at start of pipe from Re & f from Moody chart
             
+         
+    
+              
     
