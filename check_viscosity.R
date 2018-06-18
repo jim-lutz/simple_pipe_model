@@ -184,4 +184,28 @@ DT_water[,list(mean.nu       = mean(nu),
 # difference in 4th significant digit
 # probably ignore for now.
 
+# plot kinematic viscosity miniREFPROP & CHNOSZ by Pnom
+ggplot(data=DT_water, 
+       aes(x=nu, y= nu.ft_2_s, color=as.factor(Pnom)) )+
+  geom_line() 
+
+# r-squared
+nu.lm = lm(nu ~ nu.ft_2_s, data=DT_water) 
+str(nu.lm)
+nu.lm
+summary.lm(nu.lm)
+# Residuals:
+#        Min         1Q     Median         3Q        Max 
+# -3.516e-09 -4.400e-10 -7.160e-11  4.352e-10  1.859e-09 
+# 
+# Coefficients:
+#                 Estimate Std. Error   t value Pr(>|t|)    
+#   (Intercept) -5.131e-09  5.196e-11    -98.75   <2e-16 ***
+#   nu.ft_2_s    1.000e+00  6.137e-06 162949.01   <2e-16 ***
+#   ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+# Residual standard error: 6.613e-10 on 985 degrees of freedom
+# Multiple R-squared:      1,	Adjusted R-squared:      1 
+# F-statistic: 2.655e+10 on 1 and 985 DF,  p-value: < 2.2e-16
 
