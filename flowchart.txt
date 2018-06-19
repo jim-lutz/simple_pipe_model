@@ -63,5 +63,12 @@ export_data.5.R
     output: ./data/5/*.T.norm_dVol.norm.csv
             ./charts/*_T.norm_dVol.norm.png
     
-            
+check_viscosity.R
+    # script to compare (dynamic) viscosity from CHNOSZ with
+    # viscosity from miniREFPROP.exe
+    
+build_Re.R
+    # script to build function to calculate Reynolds number
+    so far only built kinematic.viscosity(DT)
+                
             

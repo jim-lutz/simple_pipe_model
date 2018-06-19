@@ -470,7 +470,15 @@ https://plot.ly/~jlutz/11/
     won't compound rounding errors by nu = rho / mu
     calc Re = V.mean * diam / nu 
     
-         
+2018-06-18
+    water.SUPCRT92 only returns the visck for the first temperature in a list?
+    add T.K to table, calculate visck, remove T.K, then return data.table?
+    also needed P.bar
     
+    having trouble with frames in the data.table, but think I got it.
+
+    build function to calculate Re given T, ID & GPM
+    
+        
               
     

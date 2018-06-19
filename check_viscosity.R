@@ -209,3 +209,6 @@ summary.lm(nu.lm)
 # Multiple R-squared:      1,	Adjusted R-squared:      1 
 # F-statistic: 2.655e+10 on 1 and 985 DF,  p-value: < 2.2e-16
 
+# save DT_water as .Rdata
+save(DT_water, file = paste0(wd_data, "DT_Water.viscosity.Rdata"))
+
