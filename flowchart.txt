@@ -70,5 +70,6 @@ check_viscosity.R
 build_Re.R
     # script to build function to calculate Reynolds number
     so far only built kinematic.viscosity(DT)
+    calculated Re for 20 records test.segment==1, looks good
                 
             

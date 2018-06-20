@@ -471,14 +471,23 @@ https://plot.ly/~jlutz/11/
     calc Re = V.mean * diam / nu 
     
 2018-06-18
+    having trouble with frames in the data.table, but think I got it.
+
     water.SUPCRT92 only returns the visck for the first temperature in a list?
     add T.K to table, calculate visck, remove T.K, then return data.table?
-    also needed P.bar
+    also needed to P.bar
     
     having trouble with frames in the data.table, but think I got it.
 
     build function to calculate Re given T, ID & GPM
     
+2018-06-19
         
-              
+    reviewed references on water from IAPWS this morning. Don't use IAPWS95. See Pátek 2009 instead
+    
+    use CHNOSZ for now. 
+    
+    tested on first 20 records of test.segment==1 compared to 
+    /home/jiml/HotWaterResearch/projects/How Low/Single Pipe Hot Water Delivery Analysis/pipe_flow.xls
+    for similar temps and velocities, was close enough
     
