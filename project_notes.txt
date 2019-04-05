@@ -491,3 +491,8 @@ https://plot.ly/~jlutz/11/
     /home/jiml/HotWaterResearch/projects/How Low/Single Pipe Hot Water Delivery Analysis/pipe_flow.xls
     for similar temps and velocities, was close enough
     
+2019-04-05
+    transitioned to 
+        /home/jiml/HotWaterResearch/projects/Pipe Flow Model Data/simple_pipe_model/
+        
+            
